@@ -1,0 +1,25 @@
+cmake_minimum_required(VERSION 3.11)
+
+project(openac)
+
+set(openac_is_toplevel_project FALSE)
+if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  set(openac_is_toplevel_project TRUE)
+endif()
+
+# Avoid showing external dependencies at top level on Xcode
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+set(CMAKE_CXX_STANDARD 17)
+option(openac_enable_tests "Enable tests" ${openac_is_toplevel_project})
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_asio.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_spdlog.cmake)
+
+include_directories(src)
+add_subdirectory(src)
+
+if(${openac_enable_tests})
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_googletest.cmake)
+  add_subdirectory(test)
+endif()

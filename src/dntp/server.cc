@@ -26,10 +26,6 @@ void Server::Start(uint16_t port, std::error_code& err) {
   Run();
 }
 
-uint16_t Server::port() const {
-  return socket_.local_endpoint().port();
-}
-
 void Server::Run() {
   socket_.async_receive_from(
     asio::buffer(&message_, sizeof(message_)), origin_,
@@ -71,6 +67,10 @@ void Server::Run() {
 
 Timestamp Server::Now() const {
   return Timestamp::Now<std::chrono::system_clock>();
+}
+
+asio::ip::udp::endpoint Server::endpoint() const {
+  return socket_.local_endpoint();
 }
 
 }  // namespace dntp

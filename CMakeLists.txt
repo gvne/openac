@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.11)
 
-project(openac)
+project(openac VERSION 0.1)
 
 set(openac_is_toplevel_project FALSE)
 if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
@@ -15,6 +15,7 @@ option(openac_enable_tests "Enable tests" ${openac_is_toplevel_project})
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_asio.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_spdlog.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_juce.cmake)
 
 include_directories(src)
 add_subdirectory(src)

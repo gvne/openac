@@ -1,11 +1,10 @@
 set(dntp_sources
-  dntp.h
-
   message.h
   message.cc
   timestamp.h
   timestamp.cc
 
+  server_interface.h
   server.h
   server.cc
   client.h

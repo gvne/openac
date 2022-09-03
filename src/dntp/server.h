@@ -4,21 +4,19 @@
 #include <system_error>
 #include <asio.hpp>
 #include "dntp/message.h"
-#include "dntp/timestamp.h"
+#include "dntp/server_interface.h"
 
 namespace oac {
 namespace dntp {
 
-class Server {
+class Server : public ServerInterface {
  public:
   explicit Server(asio::io_context& context);
   void Start(std::error_code& err);
   void Start(uint16_t port, std::error_code& err);
-
-  uint16_t port() const;
-
- protected:
-  virtual Timestamp Now() const;
+  
+  virtual Timestamp Now() const override;
+  asio::ip::udp::endpoint endpoint() const override;
 
  private:
   void Run();

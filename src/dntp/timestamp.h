@@ -8,9 +8,8 @@ namespace oac {
 namespace dntp {
 
 struct Timestamp {
-  template <class ReferenceClock>
-  static Timestamp Now() {
-    auto tp = ReferenceClock::now();
+  template <class Clock>
+  static Timestamp FromTimePoint(std::chrono::time_point<Clock> tp) {
     Timestamp ts;
 
     // seconds
@@ -26,6 +25,11 @@ struct Timestamp {
       (duration_ns.count() * std::numeric_limits<uint32_t>::max()) / 1e9;
     
     return ts;
+  }
+  
+  template <class ReferenceClock = std::chrono::system_clock>
+  static Timestamp Now() {
+    return FromTimePoint(ReferenceClock::now());
   }
   
   uint64_t Pack() const;

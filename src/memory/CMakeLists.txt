@@ -1,6 +1,7 @@
 set(memory_sources
   endian.h
   endian.cc
+  circular_buffer.h
 )
 add_library(memory ${memory_sources})
 target_include_directories(memory PUBLIC

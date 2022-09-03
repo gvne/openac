@@ -45,8 +45,7 @@ TEST(DNTP, Basic) {
     time_offset_sum += time_offset;
     time_offset_count += 1;
   };
-  client.Start(asio::ip::udp::endpoint(asio::ip::address::from_string("127.0.0.1"), server.port()),
-               on_update, err);
+  client.Start(server.endpoint(), on_update, err);
   
   ASSERT_FALSE(err);
   

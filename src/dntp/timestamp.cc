@@ -3,35 +3,35 @@
 
 namespace oac {
 namespace dntp {
-
-uint64_t Timestamp::Pack() const {
+namespace timestamp {
+uint64_t Pack(const Timestamp& ts) {
   uint64_t retval;
   
   mem::ToBigEndian(
-    reinterpret_cast<const uint8_t*>(this),
-    sizeof(Timestamp),
+    ts.data(),
+    ts.size(),
     reinterpret_cast<uint8_t*>(&retval));
   
   return retval;
 }
 
-Timestamp Timestamp::Unpack(uint64_t value) {
+Timestamp Unpack(uint64_t value) {
   Timestamp retval;
   
   mem::FromBigEndian(
     reinterpret_cast<const uint8_t*>(&value),
-    sizeof(Timestamp),
-    reinterpret_cast<uint8_t*>(&retval));
+    retval.size(),
+    retval.data());
   
   return retval;
 }
 
-Timestamp::TimePoint Timestamp::ToTimePoint() const {
-  uint64_t duration_ns = static_cast<double>(fraction * 1e9) / std::numeric_limits<uint32_t>::max();
+TimePoint ToTimePoint(const Timestamp& ts) {
+  uint64_t duration_ns = static_cast<double>(ts.fraction * 1e9) / std::numeric_limits<uint32_t>::max();
   std::chrono::nanoseconds duration(duration_ns);
   
-  return Timestamp::TimePoint(duration + std::chrono::seconds(seconds));
+  return TimePoint(duration + std::chrono::seconds(ts.seconds));
 }
-
+}  // namespace timestamps
 }  // namespace dntp
 }  // namespace oac

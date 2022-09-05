@@ -42,7 +42,7 @@ void Publisher::Reset() {
     mem::ToBigEndian(dntp_server_.endpoint().port());
   auto ipv4_addr = dntp_server_.endpoint().address().to_v4().to_bytes();
   message_.extension.ntp_server_address = ipv4_addr;
-  message_.extension.reference_timestamp = dntp_server_.Now().Pack();
+  message_.extension.reference_timestamp = dntp::timestamp::Pack(dntp_server_.Now());
 
   pending_sample_count_ = 0;
 }

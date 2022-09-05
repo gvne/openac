@@ -31,7 +31,7 @@ void Server::Run() {
     asio::buffer(message_.data(), message_.size()), origin_,
     [&](const asio::error_code& cerr, std::size_t size) {
       spdlog::trace("dntp - Received a request");
-      auto receive_timestamp = Now().Pack();
+      auto receive_timestamp = timestamp::Pack(Now());
       if (cerr) {
         spdlog::debug("dntp - Invalid message received {}", cerr.message());
         Run();
@@ -53,7 +53,7 @@ void Server::Run() {
         response.version = version;
         response.originate_timestamp = originate_timestamp;
         response.receive_timestamp = receive_timestamp;
-        response.transmit_timestamp = Now().Pack();
+        response.transmit_timestamp = timestamp::Pack(Now());
         
         std::error_code err;
         socket_.send_to(
@@ -68,7 +68,7 @@ void Server::Run() {
 }
 
 Timestamp Server::Now() const {
-  return Timestamp::Now<std::chrono::system_clock>();
+  return timestamp::Now<std::chrono::system_clock>();
 }
 
 asio::ip::udp::endpoint Server::endpoint() const {

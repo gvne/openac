@@ -14,7 +14,7 @@ Buffer::Buffer(std::size_t content_size) : data_(content_size) {}
 
 void Buffer::Synchronize(
   std::chrono::time_point<std::chrono::system_clock> tp) {
-  auto ts = dntp::Timestamp::FromTimePoint(tp).Pack();
+  auto ts = dntp::timestamp::Pack(dntp::timestamp::FromTimePoint(tp));
   data_.set_pop_index(IndexFromTimestamp(ts));
 }
 
@@ -37,7 +37,7 @@ void Buffer::Clear() {
 
 
 uint64_t Buffer::IndexFromTimestamp(uint64_t packed_ts) const {
-  auto ts = dntp::Timestamp::Unpack(packed_ts);
+  auto ts = dntp::timestamp::Unpack(packed_ts);
   // the circular buffer index is always a modulo content size.
   // We run the modulo here to avoid overflow if the timestamp is
   // too large

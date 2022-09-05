@@ -8,20 +8,22 @@ namespace dntp {
 namespace message {
 std::chrono::nanoseconds RoundTripDelay(const Message& msg,
                                         uint64_t final_timestamp) {
-  auto t0 = Timestamp::Unpack(msg.originate_timestamp).ToTimePoint();
-  auto t1 = Timestamp::Unpack(msg.receive_timestamp).ToTimePoint();
-  auto t2 = Timestamp::Unpack(msg.transmit_timestamp).ToTimePoint();
-  auto t3 = Timestamp::Unpack(final_timestamp).ToTimePoint();
+  using namespace timestamp;
+  auto t0 = ToTimePoint(Unpack(msg.originate_timestamp));
+  auto t1 = ToTimePoint(Unpack(msg.receive_timestamp));
+  auto t2 = ToTimePoint(Unpack(msg.transmit_timestamp));
+  auto t3 = ToTimePoint(Unpack(final_timestamp));
   
   return (t3 - t0) - (t2 - t1);
 }
 
 std::chrono::nanoseconds TimeOffset(const Message& msg,
                                     uint64_t final_timestamp) {
-  auto t0 = Timestamp::Unpack(msg.originate_timestamp).ToTimePoint();
-  auto t1 = Timestamp::Unpack(msg.receive_timestamp).ToTimePoint();
-  auto t2 = Timestamp::Unpack(msg.transmit_timestamp).ToTimePoint();
-  auto t3 = Timestamp::Unpack(final_timestamp).ToTimePoint();
+  using namespace timestamp;
+  auto t0 = ToTimePoint(Unpack(msg.originate_timestamp));
+  auto t1 = ToTimePoint(Unpack(msg.receive_timestamp));
+  auto t2 = ToTimePoint(Unpack(msg.transmit_timestamp));
+  auto t3 = ToTimePoint(Unpack(final_timestamp));
   
   return ((t1 - t0) + (t2 - t3)) / 2;
 }

@@ -39,7 +39,7 @@ void Client::ListenResponse() {
     asio::buffer(received_message_.data(), received_message_.size()),
     [&](const asio::error_code& cerr, std::size_t size) {
       spdlog::trace("dntp - Received response");
-      auto final_time = Now().Pack();
+      auto final_time = timestamp::Pack(Now());
       if (cerr) {
         spdlog::warn("dntp - Could not receive server response: {}", cerr.message());
         ListenResponse();
@@ -61,7 +61,7 @@ void Client::SendRequest() {
     timer_.expires_at(timer_.expiry() + period_);
     spdlog::trace("dntp - Sending request");
     sent_message_.version = message::kVersion;
-    sent_message_.originate_timestamp = Now().Pack();
+    sent_message_.originate_timestamp = timestamp::Pack(Now());
     std::error_code err;
     socket_.send_to(asio::buffer(sent_message_.data(), sent_message_.size()), server_addr_, 0, err);
     if (err) {
@@ -72,7 +72,7 @@ void Client::SendRequest() {
 }
 
 Timestamp Client::Now() const {
-  return Timestamp::Now<std::chrono::system_clock>();
+  return timestamp::Now<std::chrono::system_clock>();
 }
 
 void Client::set_period(std::chrono::milliseconds period) {

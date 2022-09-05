@@ -61,4 +61,6 @@ TEST(DNTP, Basic) {
   ASSERT_LT(time_offset_ms - expected_sync_offset_ms, 10);
 }
 
-
+TEST(DNTP, MessageSize) {
+  ASSERT_EQ(oac::dntp::Message::Size::value, 25);
+}

@@ -65,3 +65,8 @@ TEST(Wire, Basic) {
     ASSERT_LT(std::abs(sent[sample_idx] - output[sample_idx + 4410]), 100);
   }
 }
+
+TEST(Wire, MessageSize) {
+  oac::wire::Message message;
+  ASSERT_EQ(message.size(), 1796); // 882 * sizeof(int16_t) + 32);
+}

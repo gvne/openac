@@ -18,9 +18,9 @@ class AppComponent : public juce::AudioAppComponent {
   AppComponent(asio::io_context& context) :
     juce::AudioAppComponent(),
     listener_(context, 1) {}
-  
+
   ~AppComponent() { shutdownAudio(); }
-  
+
   void Initialize(std::error_code& err) {
     listener_.Initialize(err);
     if (err) {
@@ -31,11 +31,11 @@ class AppComponent : public juce::AudioAppComponent {
     deviceManager.setAudioDeviceSetup(setup, false);
     setAudioChannels(0, 1);
   }
-  
+
   uint16_t port() const {
     return listener_.channel_port(0);
   }
-    
+
   void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override {
     assert(sampleRate == 44100);
     listener_.set_latency(std::chrono::milliseconds(100));
@@ -55,12 +55,12 @@ class AppComponent : public juce::AudioAppComponent {
       spdlog::error("Could not get output channel");
       return;
     }
-    
+
     float* outBuffer = source.buffer->getWritePointer(source_channel_idx, source.startSample);
-    
+
     // get received data
     listener_.Pop(buffer_.data(), source.numSamples, 0);
-    
+
     // decode
     for (auto index = 0; index < source.numSamples; index++) {
       int16_t value = oac::mem::FromBigEndian(buffer_[index]);
@@ -68,26 +68,27 @@ class AppComponent : public juce::AudioAppComponent {
       outBuffer[index] = decoded;
     }
   }
-  
+
  private:
   oac::cable::Listener listener_;
   std::vector<int16_t> buffer_;
 };
 
 int main(int argc, char* arg[]) {
+  Initialize();
   spdlog::set_level(spdlog::level::debug);
   asio::io_context context;
   std::error_code err;
-  
+
   AppComponent ac(context);
   ac.Initialize(err);
   if (err) {
     spdlog::error("Could not initialze app component: {}", err.message());
     return -1;
   }
-  
+
   spdlog::info("Listener port: {}", ac.port());
-  
+
   context.run();
   return 0;
 }

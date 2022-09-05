@@ -21,7 +21,7 @@ class UnsynchronizedServer : public oac::dntp::Server {
   using oac::dntp::Server::Server;
  protected:
   oac::dntp::Timestamp Now() const override {
-    return oac::dntp::Timestamp::Now<UnsynchronizedClock<DeltaMilliseconds>>();
+    return oac::dntp::timestamp::Now<UnsynchronizedClock<DeltaMilliseconds>>();
   }
 };
 

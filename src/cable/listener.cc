@@ -45,7 +45,8 @@ void Listener::DntpConnect(const asio::ip::udp::endpoint &dntp_server_address) {
     return;  // client is already running
   }
   // initialize a client
-  spdlog::debug("cable - Connecting to new dntp server");
+  spdlog::debug("cable - Connecting to new dntp server at {}:{}",
+    dntp_server_address.address().to_string(), dntp_server_address.port());
   
   auto client = std::make_unique<dntp::Client>(context_);
   std::error_code err;

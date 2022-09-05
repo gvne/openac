@@ -28,6 +28,7 @@ class AppComponent : public juce::AudioAppComponent {
     if (err) {
       return;
     }
+    spdlog::debug("DNTP server ready at {}:{}", dntp_server_.endpoint().address().to_string(), dntp_server_.endpoint().port());
     pub_.Initialize(err);
     if (err) {
       return;
@@ -79,7 +80,7 @@ class AppComponent : public juce::AudioAppComponent {
 };
 
 int main(int argc, char* arg[]) {
-  spdlog::set_level(spdlog::level::trace);
+  spdlog::set_level(spdlog::level::debug);
   asio::io_context context;
   std::error_code err;
   
@@ -90,7 +91,7 @@ int main(int argc, char* arg[]) {
     return -1;
   }
   ac.AddSubscriber(asio::ip::udp::endpoint(
-    asio::ip::address::from_string("192.168.1.10"), 60932));
+    asio::ip::address::from_string("192.168.1.11"), 59464));
     
   context.run();
   return 0;

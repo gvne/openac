@@ -1,5 +1,7 @@
 #include "wire/listener.h"
 #include <spdlog/spdlog.h>
+
+#include "memory/endian.h"
 #include "dntp/timestamp.h"
 
 namespace oac {
@@ -45,7 +47,7 @@ uint16_t Listener::port() const {
 
 void Listener::Run() {
   socket_.async_receive_from(
-      asio::buffer(&message_, sizeof(Message)), pub_endpoint_,
+      asio::buffer(message_.data(), message_.size()), pub_endpoint_,
       [&](const asio::error_code& cerr, std::size_t size) {
     spdlog::trace("wire - New message received");
     if (cerr) {
@@ -54,14 +56,15 @@ void Listener::Run() {
       return;
     }
 
-    if (message_.flags != Message::kDefaultFlags || \
-        message_.extension_id != Message::kDefaultExtensionID) {
+    auto header = message_.header();
+    if (header.flags != Message::kDefaultFlags || \
+        header.extension_id != Message::kDefaultExtensionID) {
       spdlog::debug("wire - Invalid message received");
       Run();
       return;
     }
 
-    if (message_.extension.version != Message::Extension::kDefaultVersion) {
+    if (header.extension_version != Message::kDefaultExtensionVersion) {
       spdlog::debug("wire - Invalid extension version");
       Run();
       return;
@@ -69,30 +72,37 @@ void Listener::Run() {
 
     // Update the message extension ip address if set to 0.0.0.0 to the
     //  publisher address.
-    if (message_.extension.ntp_server_address == \
-          std::array<uint8_t, 4>{0, 0, 0, 0}) {
-      message_.extension.ntp_server_address = \
-        pub_endpoint_.address().to_v4().to_bytes();
+    auto dntp_address = message_.extension_ntp_server_address_ipv4();
+    if (dntp_address == std::array<uint8_t, 4>{0, 0, 0, 0}) {
+      auto addr = pub_endpoint_.address().to_v4().to_bytes();
+      header.extension_ntp_server_address_ipv4_part0 = addr[0];
+      header.extension_ntp_server_address_ipv4_part1 = addr[1];
+      header.extension_ntp_server_address_ipv4_part2 = addr[2];
+      header.extension_ntp_server_address_ipv4_part3 = addr[3];
+      dntp_address = addr;
     }
     asio::ip::udp::endpoint dntp_server_endpoint(
-      asio::ip::address_v4(message_.extension.ntp_server_address),
-      message_.extension.ntp_server_port);
+      asio::ip::address_v4(dntp_address),
+      mem::FromBigEndian(header.extension_ntp_server_port));
 
     // If the reference timestamp changed it means that the stream got reset
     // We can reset the read content
-    if (reference_timestamp_ != message_.extension.reference_timestamp || \
+    if (reference_timestamp_ != header.extension_reference_timestamp || \
         dntp_server_endpoint_ != dntp_server_endpoint) {
       spdlog::debug("wire - Reset stream");
-      reference_timestamp_ = message_.extension.reference_timestamp;
+      reference_timestamp_ = header.extension_reference_timestamp;
       dntp_server_endpoint_ = dntp_server_endpoint;
       data_.Clear();
       // execute the on_stream_reset callback asynchronously
       context_.post(on_stream_reset_);
     }
+    
+    // reset the message with updated header (dntp server addr may change)
+    message_.set_header(header);
 
     // Push obtained data in the circular buffer
-    data_.set_push_index(reference_timestamp_, message_.timestamp);
-    data_.Push(message_.data.data(), message_.data.size());
+    data_.set_push_index(reference_timestamp_, header.timestamp);
+    data_.Push(message_.content(), message_.content_size());
 
     Run();
   });

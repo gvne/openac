@@ -1,5 +1,6 @@
 set(wire_sources
   message.h
+  message.cc
 
   publisher_interface.h
   publisher.h
@@ -18,6 +19,7 @@ target_link_libraries(wire
 
   asio
   spdlog
+  astruct
 )
 target_include_directories(wire PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>

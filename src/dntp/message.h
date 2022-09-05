@@ -4,20 +4,25 @@
 #include <cstdint>
 #include <chrono>
 
+#include "astruct/astruct.h"
+
 namespace oac {
 namespace dntp {
 
-struct Message {
-  static const uint8_t kVersion = 1;
-  
-  uint8_t version;
-  uint64_t originate_timestamp;
-  uint64_t receive_timestamp;
-  uint64_t transmit_timestamp;
-  
-  std::chrono::nanoseconds RoundTripDelay(uint64_t final_timestamp) const;
-  std::chrono::nanoseconds TimeOffset(uint64_t final_timestamp) const;
-} __attribute__((packed));
+ASTRUCT(Message,
+  (uint8_t, version),
+  (uint64_t, originate_timestamp),
+  (uint64_t, receive_timestamp),
+  (uint64_t, transmit_timestamp)
+);
+
+namespace message {
+  const uint8_t kVersion = 1;
+  std::chrono::nanoseconds RoundTripDelay(const Message& msg,
+                                          uint64_t final_timestamp);
+  std::chrono::nanoseconds TimeOffset(const Message& msg,
+                                      uint64_t final_timestamp);
+}  // namespace message
 
 }  // namespace dntp
 }  // namespace oac

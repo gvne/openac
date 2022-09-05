@@ -36,7 +36,7 @@ void Client::Start(asio::ip::udp::endpoint server_addr,
 
 void Client::ListenResponse() {
   socket_.async_receive(
-    asio::buffer(&received_message_, sizeof(received_message_)),
+    asio::buffer(received_message_.data(), received_message_.size()),
     [&](const asio::error_code& cerr, std::size_t size) {
       spdlog::trace("dntp - Received response");
       auto final_time = Now().Pack();
@@ -46,8 +46,8 @@ void Client::ListenResponse() {
         return;
       }
 
-      auto round_trip_delay = received_message_.RoundTripDelay(final_time);
-      auto time_offset = received_message_.TimeOffset(final_time);
+      auto round_trip_delay = message::RoundTripDelay(received_message_, final_time);
+      auto time_offset = message::TimeOffset(received_message_,final_time);
       asio::post(context_, [this, round_trip_delay, time_offset](){
         callback_(time_offset, round_trip_delay);
       });
@@ -60,10 +60,10 @@ void Client::SendRequest() {
   timer_.async_wait([&](const asio::error_code& cerr){
     timer_.expires_at(timer_.expiry() + period_);
     spdlog::trace("dntp - Sending request");
-    sent_message_.version = Message::kVersion;
+    sent_message_.version = message::kVersion;
     sent_message_.originate_timestamp = Now().Pack();
     std::error_code err;
-    socket_.send_to(asio::buffer(&sent_message_, sizeof(Message)), server_addr_, 0, err);
+    socket_.send_to(asio::buffer(sent_message_.data(), sent_message_.size()), server_addr_, 0, err);
     if (err) {
       spdlog::debug("dntp - Couldn't send request: {}", err.message());
     }

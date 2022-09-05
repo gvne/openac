@@ -15,12 +15,13 @@ option(openac_enable_tests "Enable tests" ${openac_is_toplevel_project})
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_asio.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_spdlog.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_juce.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_structutils.cmake)
 
 include_directories(src)
 add_subdirectory(src)
 
 if(${openac_enable_tests})
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_juce.cmake)
   include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_googletest.cmake)
   add_subdirectory(test)
 endif()

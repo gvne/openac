@@ -28,7 +28,7 @@ void Server::Start(uint16_t port, std::error_code& err) {
 
 void Server::Run() {
   socket_.async_receive_from(
-    asio::buffer(&message_, sizeof(message_)), origin_,
+    asio::buffer(message_.data(), message_.size()), origin_,
     [&](const asio::error_code& cerr, std::size_t size) {
       spdlog::trace("dntp - Received a request");
       auto receive_timestamp = Now().Pack();
@@ -38,24 +38,26 @@ void Server::Run() {
         return;
       }
 
-      if (message_.version != Message::kVersion) {
+      if (message_.version != message::kVersion) {
         spdlog::debug("dntp - Invalid message version received {}", message_.version);
         Run();
         return;
       }
-
-      // update received timestamp
-      message_.receive_timestamp = receive_timestamp;
-
-      // push it to be sent (NB: copy capture the message and destination)
-      auto message = message_;
+      
+      auto version = message_.version;
+      auto originate_timestamp = message_.originate_timestamp;
       auto origin = origin_;
-      asio::post(context_, [&, message, origin]() mutable {
+      asio::post(context_, [&, version, originate_timestamp, receive_timestamp, origin]() mutable {
         spdlog::trace("dntp - Sending response");
-        message.transmit_timestamp = Now().Pack();
+        Message response;
+        response.version = version;
+        response.originate_timestamp = originate_timestamp;
+        response.receive_timestamp = receive_timestamp;
+        response.transmit_timestamp = Now().Pack();
+        
         std::error_code err;
         socket_.send_to(
-          asio::buffer(&message, sizeof(message)), origin, 0, err);
+          asio::buffer(response.data(), response.size()), origin, 0, err);
         if (err) {
           spdlog::debug("dntp - Could not reply: {}", err.message());
         }

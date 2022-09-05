@@ -16,6 +16,7 @@ target_link_libraries(dntp
 
   asio
   spdlog
+  astruct
 )
 target_include_directories(dntp PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>

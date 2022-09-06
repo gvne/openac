@@ -28,7 +28,7 @@ TEST(Cable, Basic) {
   pub.channel(0).AddSubscriber(asio::ip::udp::endpoint(
     asio::ip::address::from_string("127.0.0.1"), listener.channel_port(0)));
   
-  std::atomic_bool stop = false;
+  std::atomic_bool stop(false);
   std::thread run_thread([&stop, &context](){
     while (!stop) {
       context.run_for(std::chrono::seconds(1));

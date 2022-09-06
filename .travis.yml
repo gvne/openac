@@ -2,7 +2,7 @@ language: cpp
 os:
   - linux
   - osx
-  - windows
+  #- windows  # ATM only visual studio 2017 is available. 2019 is required
 
 script:
   - mkdir build && cd build

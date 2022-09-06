@@ -1,8 +1,8 @@
-#include "wire/listener.h"
+#include "oac/wire/listener.h"
 #include <spdlog/spdlog.h>
 
-#include "memory/endian.h"
-#include "dntp/timestamp.h"
+#include "oac/memory/endian.h"
+#include "oac/dntp/timestamp.h"
 
 namespace oac {
 namespace wire {

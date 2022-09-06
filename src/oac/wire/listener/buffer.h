@@ -1,8 +1,8 @@
 #ifndef OAC_WIRE_LISTENER_BUFFER_H_
 #define OAC_WIRE_LISTENER_BUFFER_H_
 
-#include "wire/listener/output.h"
-#include "memory/circular_buffer.h"
+#include "oac/wire/listener/output.h"
+#include "oac/memory/circular_buffer.h"
 
 namespace oac {
 namespace wire {

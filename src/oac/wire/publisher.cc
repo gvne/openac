@@ -1,9 +1,9 @@
-#include "wire/publisher.h"
+#include "oac/wire/publisher.h"
 
 #include <spdlog/spdlog.h>
 
-#include "memory/endian.h"
-#include "dntp/timestamp.h"
+#include "oac/memory/endian.h"
+#include "oac/dntp/timestamp.h"
 
 namespace oac {
 namespace wire {

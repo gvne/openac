@@ -12,19 +12,21 @@ set(wire_sources
   listener/buffer.h
   listener/buffer.cc
 )
-add_library(wire ${wire_sources})
-target_link_libraries(wire
-  memory
-  dntp
+add_library(oac_wire ${wire_sources})
+target_link_libraries(oac_wire
+  oac::memory
+  oac::dntp
 
   asio
   spdlog
   astruct
 )
-target_include_directories(wire PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+target_include_directories(oac_wire PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
   $<INSTALL_INTERFACE:include>
 )
 
 source_group(TREE "${CMAKE_CURRENT_LIST_DIR}" FILES ${wire_sources})
-set_target_properties(wire PROPERTIES FOLDER src)
+set_target_properties(oac_wire PROPERTIES FOLDER src/oac)
+
+add_library(oac::wire ALIAS oac_wire)

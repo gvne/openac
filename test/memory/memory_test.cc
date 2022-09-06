@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "memory/circular_buffer.h"
+#include "oac/memory/circular_buffer.h"
 
 TEST(Memory, CircularBuffer_Syntax) {
   const auto message_size = 882;

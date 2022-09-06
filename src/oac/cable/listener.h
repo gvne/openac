@@ -3,8 +3,8 @@
 
 #include <map>
 
-#include "dntp/client.h"
-#include "wire/listener.h"
+#include "oac/dntp/client.h"
+#include "oac/wire/listener.h"
 
 namespace oac {
 namespace cable {

@@ -1,10 +1,10 @@
-#include "wire/listener/buffer.h"
+#include "oac/wire/listener/buffer.h"
 
 #include <cmath>
 #include <limits>
 #include <spdlog/spdlog.h>
 
-#include "dntp/timestamp.h"
+#include "oac/dntp/timestamp.h"
 
 namespace oac {
 namespace wire {

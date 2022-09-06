@@ -13,7 +13,7 @@ target_compile_definitions(cable_emit PRIVATE
     JUCE_USE_CURL=0
 )
 target_link_libraries(cable_emit PRIVATE
-  cable
+  oac::cable
   juce::juce_core
   juce::juce_audio_utils
   juce::juce_audio_basics
@@ -38,7 +38,7 @@ target_compile_definitions(cable_receive PRIVATE
     JUCE_USE_CURL=0
 )
 target_link_libraries(cable_receive PRIVATE
-  cable
+  oac::cable
   juce::juce_core
   juce::juce_audio_utils
   juce::juce_audio_basics

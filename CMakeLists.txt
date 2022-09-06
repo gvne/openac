@@ -17,9 +17,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_asio.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_spdlog.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_structutils.cmake)
 
-include_directories(src)
 add_subdirectory(src)
-
 if(${openac_enable_tests})
   include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_juce.cmake)
   include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_googletest.cmake)

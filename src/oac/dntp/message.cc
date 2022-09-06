@@ -1,5 +1,5 @@
-#include "dntp/message.h"
-#include "dntp/timestamp.h"
+#include "oac/dntp/message.h"
+#include "oac/dntp/timestamp.h"
 
 namespace oac {
 namespace dntp {

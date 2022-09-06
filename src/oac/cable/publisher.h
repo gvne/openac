@@ -1,8 +1,8 @@
 #ifndef OAC_CABLE_PUBLISHER_H_
 #define OAC_CABLE_PUBLISHER_H_
 
-#include "dntp/server_interface.h"
-#include "wire/publisher.h"
+#include "oac/dntp/server_interface.h"
+#include "oac/wire/publisher.h"
 
 namespace oac {
 namespace cable {

@@ -1,6 +1,6 @@
-#include "dntp/server.h"
+#include "oac/dntp/server.h"
 #include <spdlog/spdlog.h>
-#include "dntp/timestamp.h"
+#include "oac/dntp/timestamp.h"
 
 namespace oac {
 namespace dntp {

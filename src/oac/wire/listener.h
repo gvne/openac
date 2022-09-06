@@ -6,11 +6,11 @@
 
 #include <asio.hpp>
 
-#include "memory/circular_buffer.h"
+#include "oac/memory/circular_buffer.h"
 
-#include "wire/message.h"
-#include "wire/listener/output.h"
-#include "wire/listener/buffer.h"
+#include "oac/wire/message.h"
+#include "oac/wire/listener/output.h"
+#include "oac/wire/listener/buffer.h"
 
 namespace oac {
 namespace wire {

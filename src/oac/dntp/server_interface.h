@@ -2,7 +2,7 @@
 #define OAC_DNTP_SERVER_INTERFACE_H_
 
 #include <asio.hpp>
-#include "dntp/timestamp.h"
+#include "oac/dntp/timestamp.h"
 
 namespace oac {
 namespace dntp {

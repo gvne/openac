@@ -5,9 +5,9 @@
 #include <list>
 #include <array>
 
-#include "dntp/server_interface.h"
-#include "wire/publisher_interface.h"
-#include "wire/message.h"
+#include "oac/dntp/server_interface.h"
+#include "oac/wire/publisher_interface.h"
+#include "oac/wire/message.h"
 
 namespace oac {
 namespace wire {

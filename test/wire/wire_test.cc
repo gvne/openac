@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
 
-#include "dntp/server.h"
-#include "wire/publisher.h"
-#include "wire/listener.h"
+#include "oac/dntp/server.h"
+#include "oac/wire/publisher.h"
+#include "oac/wire/listener.h"
 
 std::vector<int16_t> MakeTestSignal(int16_t min, int16_t max, int16_t step) {
   std::vector<int16_t> retval;

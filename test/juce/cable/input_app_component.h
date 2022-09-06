@@ -3,8 +3,8 @@
 
 #include <JuceHeader.h>
 
-#include "dntp/server.h"
-#include "cable/publisher.h"
+#include "oac/dntp/server.h"
+#include "oac/cable/publisher.h"
 
 namespace oac {
 

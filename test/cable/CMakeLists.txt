@@ -3,7 +3,7 @@ set(cable_test_sources
 )
 add_executable(cable_test ${cable_test_sources})
 target_link_libraries(cable_test
-  cable
+  oac::cable
   gtest
   gtest_main
 )

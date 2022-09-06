@@ -3,7 +3,7 @@ set(memory_test_sources
 )
 add_executable(memory_test ${memory_test_sources})
 target_link_libraries(memory_test
-  memory
+  oac::memory
   gtest
   gtest_main
 )

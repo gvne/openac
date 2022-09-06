@@ -3,7 +3,7 @@ set(wire_test_sources
 )
 add_executable(wire_test ${wire_test_sources})
 target_link_libraries(wire_test
-  wire
+  oac::wire
   gtest
   gtest_main
 )

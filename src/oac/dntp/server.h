@@ -2,9 +2,11 @@
 #define OAC_DNTP_SERVER_H_
 
 #include <system_error>
+
 #include <asio.hpp>
-#include "dntp/message.h"
-#include "dntp/server_interface.h"
+
+#include "oac/dntp/message.h"
+#include "oac/dntp/server_interface.h"
 
 namespace oac {
 namespace dntp {

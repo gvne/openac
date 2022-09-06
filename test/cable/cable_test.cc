@@ -2,9 +2,9 @@
 
 #include <spdlog/spdlog.h>
 
-#include "dntp/server.h"
-#include "cable/publisher.h"
-#include "cable/listener.h"
+#include "oac/dntp/server.h"
+#include "oac/cable/publisher.h"
+#include "oac/cable/listener.h"
 
 TEST(Cable, Basic) {
   spdlog::set_level(spdlog::level::trace);

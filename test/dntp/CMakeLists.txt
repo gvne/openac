@@ -3,7 +3,7 @@ set(dntp_test_sources
 )
 add_executable(dntp_test ${dntp_test_sources})
 target_link_libraries(dntp_test
-  dntp
+  oac::dntp
   gtest
   gtest_main
 )

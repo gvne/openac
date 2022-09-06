@@ -1,5 +1,5 @@
-#include "dntp/timestamp.h"
-#include "memory/endian.h"
+#include "oac/dntp/timestamp.h"
+#include "oac/memory/endian.h"
 
 namespace oac {
 namespace dntp {

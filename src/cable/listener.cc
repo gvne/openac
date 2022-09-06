@@ -65,8 +65,8 @@ void Listener::DntpConnect(const asio::ip::udp::endpoint &dntp_server_address) {
   auto client = std::make_unique<dntp::Client>(context_);
   std::error_code err;
   client->Start(dntp_server_address, [this, dntp_server_address](
-      dntp::Client::Nanoseconds round_trip_delay,
-      dntp::Client::Nanoseconds time_offset){
+      dntp::Client::Nanoseconds time_offset,
+      dntp::Client::Nanoseconds round_trip_delay){
     spdlog::trace("cable - dntp data received");
     Synchronize(dntp_server_address, round_trip_delay, time_offset);
   }, err);
@@ -86,9 +86,9 @@ void Listener::Synchronize(
   auto lat_ms = std::chrono::duration_cast<std::chrono::milliseconds>(latency());
   now -= lat_ms;
   
-  // TODO: determine if it should be - or + time offset
+  // Compensate for clock synchronization
   auto to_ms = std::chrono::duration_cast<std::chrono::milliseconds>(time_offset);
-  now -= to_ms;
+  now += to_ms;
   
   spdlog::debug("cable - Time offset: {}ms", to_ms.count());
   

@@ -10,3 +10,5 @@ target_link_libraries(dntp_test
 
 source_group(TREE "${CMAKE_CURRENT_LIST_DIR}" FILES ${dntp_test_sources})
 set_target_properties(dntp_test PROPERTIES FOLDER test)
+
+add_test(NAME dntp_test COMMAND dntp_test)

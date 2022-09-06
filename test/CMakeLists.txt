@@ -3,4 +3,6 @@ add_subdirectory(dntp)
 add_subdirectory(wire)
 add_subdirectory(cable)
 
-add_subdirectory(juce)
+if (${openac_enable_juce_tests})
+  add_subdirectory(juce)
+endif()

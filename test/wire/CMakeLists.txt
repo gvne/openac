@@ -10,3 +10,5 @@ target_link_libraries(wire_test
 
 source_group(TREE "${CMAKE_CURRENT_LIST_DIR}" FILES ${wire_test_sources})
 set_target_properties(wire_test PROPERTIES FOLDER test)
+
+add_test(NAME wire_test COMMAND wire_test)

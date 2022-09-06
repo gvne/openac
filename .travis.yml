@@ -1,0 +1,11 @@
+language: cpp
+os:
+  - linux
+  - osx
+  - windows
+
+script:
+  - mkdir build && cd build
+  - cmake -Dopenac_enable_juce_tests=OFF ..
+  - cmake --build .
+  - ctest -C Debug

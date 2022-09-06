@@ -10,3 +10,5 @@ target_link_libraries(cable_test
 
 source_group(TREE "${CMAKE_CURRENT_LIST_DIR}" FILES ${cable_test_sources})
 set_target_properties(cable_test PROPERTIES FOLDER test)
+
+add_test(NAME cable_test COMMAND cable_test)

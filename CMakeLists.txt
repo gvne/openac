@@ -12,6 +12,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(CMAKE_CXX_STANDARD 17)
 option(openac_enable_tests "Enable tests" ${openac_is_toplevel_project})
+option(openac_enable_juce_tests "Enable JUCE tests" ${openac_is_toplevel_project})
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_asio.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_spdlog.cmake)
@@ -19,7 +20,11 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_structutils.cmake)
 
 add_subdirectory(src)
 if(${openac_enable_tests})
-  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_juce.cmake)
+  enable_testing()
   include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_googletest.cmake)
+  if (${openac_enable_juce_tests})
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_juce.cmake)
+  endif()
+
   add_subdirectory(test)
 endif()

@@ -10,3 +10,5 @@ target_link_libraries(memory_test
 
 source_group(TREE "${CMAKE_CURRENT_LIST_DIR}" FILES ${memory_test_sources})
 set_target_properties(memory_test PROPERTIES FOLDER test)
+
+add_test(NAME memory_test COMMAND memory_test)

@@ -14,17 +14,26 @@ namespace wire {
 
 class Publisher : public PublisherInterface {
  public:
+  /// Constructor
+  /// \param context the asio::io_context on which the publisher will run
+  /// \param dntp_server the dntp server used as time reference by the publisher
   Publisher(asio::io_context& context,
             const dntp::ServerInterface& dntp_server);
 
+  /// Setup the publisher
+  /// \param err set if an error occurs
   void Initialize(std::error_code& err);
 
+  /// Add a destination to the publisher
+  /// \param sub_addr the address to a oac::wire::Listener
   void AddSubscriber(asio::ip::udp::endpoint sub_addr) override;
 
   // Clear the samples to be sent & reset the synchronization point To the now
   void Reset();
 
-  // Send 16bits Linear PCM mono encoded data
+  /// Publish L16 mono encoded samples (should be big endian as required by rtp)
+  /// \param data pointer to the first byte to publish
+  /// \param sample_count the number of samples to send
   void Publish(const int16_t* data, std::size_t sample_count) override;
 
  private:

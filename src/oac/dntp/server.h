@@ -11,13 +11,26 @@
 namespace oac {
 namespace dntp {
 
+/// The dntp server implementation based on the std::chrono::system_clock
 class Server : public ServerInterface {
  public:
+  /// Constructor
+  /// \param context the asio::io_context on which the client will run
   explicit Server(asio::io_context& context);
+
+  /// Start the server on a random port
+  /// \param err set if an error occurs
   void Start(std::error_code& err);
+
+  /// Start the server on a specific port
+  /// \param port the desired port
+  /// \param err set if an error occurs
   void Start(uint16_t port, std::error_code& err);
-  
+
+  /// The current time in NTP timestamp format
   virtual Timestamp Now() const override;
+
+  /// the address at which the server can be reached
   asio::ip::udp::endpoint endpoint() const override;
 
  private:

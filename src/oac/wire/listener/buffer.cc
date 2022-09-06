@@ -38,14 +38,10 @@ void Buffer::Clear() {
 
 uint64_t Buffer::IndexFromTimestamp(uint64_t packed_ts) const {
   auto ts = dntp::timestamp::Unpack(packed_ts);
-  // the circular buffer index is always a modulo content size.
-  // We run the modulo here to avoid overflow if the timestamp is
-  // too large
-  auto second_index = (ts.seconds * 44100);// % data_.content_size();
-  
+  auto second_index = (ts.seconds * 44100);
   double fraction = static_cast<double>(ts.fraction) / std::numeric_limits<uint32_t>::max();
   auto fraction_index = std::lround(fraction * 44100);
-  
+
   return second_index + fraction_index;
 }
 

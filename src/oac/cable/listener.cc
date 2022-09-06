@@ -12,7 +12,7 @@ Listener::Listener(asio::io_context& context, uint8_t channel_count):
   }
 }
 
-void Listener::Initialize(std::vector<uint16_t> channel_ports,
+void Listener::Initialize(const std::vector<uint16_t>& channel_ports,
                           std::error_code& err) {
   assert(channel_ports.size() == listeners_.size());
   for (auto index = 0; index < channel_ports.size(); index++) {
@@ -61,7 +61,7 @@ void Listener::DntpConnect(const asio::ip::udp::endpoint &dntp_server_address) {
   // initialize a client
   spdlog::debug("cable - Connecting to new dntp server at {}:{}",
     dntp_server_address.address().to_string(), dntp_server_address.port());
-  
+
   auto client = std::make_unique<dntp::Client>(context_);
   std::error_code err;
   client->Start(dntp_server_address, [this, dntp_server_address](
@@ -85,13 +85,13 @@ void Listener::Synchronize(
   // We cast to milliseconds as the system_clock point is in ms
   auto lat_ms = std::chrono::duration_cast<std::chrono::milliseconds>(latency());
   now -= lat_ms;
-  
+
   // Compensate for clock synchronization
   auto to_ms = std::chrono::duration_cast<std::chrono::milliseconds>(time_offset);
   now += to_ms;
-  
+
   spdlog::debug("cable - Time offset: {}ms", to_ms.count());
-  
+
   for (auto& listener : listeners_) {
     if (listener.dntp_server_endpoint() != dntp_server_address) {
       continue;  // not the right dntp server

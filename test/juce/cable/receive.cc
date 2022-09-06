@@ -11,7 +11,7 @@ int main(int argc, char* arg[]) {
   std::error_code err;
 
   oac::OutputAppComponent ac(context);
-  ac.Initialize(err);
+  ac.Initialize({50000}, err);
   if (err) {
     spdlog::error("Could not initialze app component: {}", err.message());
     return -1;

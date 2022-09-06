@@ -12,6 +12,20 @@ Listener::Listener(asio::io_context& context, uint8_t channel_count):
   }
 }
 
+void Listener::Initialize(std::vector<uint16_t> channel_ports,
+                          std::error_code& err) {
+  assert(channel_ports.size() == listeners_.size());
+  for (auto index = 0; index < channel_ports.size(); index++) {
+    listeners_[index].Initialize(channel_ports[index], [this, index](){
+      // start the communication with the dntp server
+      DntpConnect(listeners_[index].dntp_server_endpoint());
+    }, err);
+    if (err) {
+      return;
+    }
+  }
+}
+
 void Listener::Initialize(std::error_code& err) {
   for (auto& listener : listeners_) {
     listener.Initialize([this, &listener](){

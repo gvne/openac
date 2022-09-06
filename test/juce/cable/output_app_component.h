@@ -10,7 +10,7 @@ class OutputAppComponent : public juce::AudioAppComponent {
  public:
   OutputAppComponent(asio::io_context& context);
   ~OutputAppComponent();
-  void Initialize(std::error_code& err);
+  void Initialize(std::vector<uint16_t> ports, std::error_code& err);
   uint16_t port() const;
 
   void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;

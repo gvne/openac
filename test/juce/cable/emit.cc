@@ -18,7 +18,7 @@ int main(int argc, char* arg[]) {
     return -1;
   }
   ac.AddSubscriber(asio::ip::udp::endpoint(
-    asio::ip::address::from_string("192.168.1.11"), 50753));
+    asio::ip::address::from_string("127.0.0.1"), 50000));
 
   context.run();
   return 0;

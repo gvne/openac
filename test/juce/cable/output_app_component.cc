@@ -12,8 +12,9 @@ OutputAppComponent::OutputAppComponent(asio::io_context& context) :
 
 OutputAppComponent::~OutputAppComponent() { shutdownAudio(); }
 
-void OutputAppComponent::Initialize(std::error_code& err) {
-  listener_.Initialize(err);
+void OutputAppComponent::Initialize(std::vector<uint16_t> ports,
+                                    std::error_code& err) {
+  listener_.Initialize(std::move(ports), err);
   if (err) {
     return;
   }

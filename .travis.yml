@@ -3,7 +3,7 @@ os:
   - linux
   - osx
   #- windows  # ATM only visual studio 2017 is available. 2019 is required
-
+osx_image: xcode12.5
 script:
   - mkdir build && cd build
   - cmake -Dopenac_enable_juce_tests=OFF ..

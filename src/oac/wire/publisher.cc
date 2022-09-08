@@ -31,9 +31,9 @@ void Publisher::Reset() {
 
   Message::Header header;
   header.flags = Message::kDefaultFlags;
-  header.sequence_number = 0;
-  header.timestamp = 0;
-  header.ssrc = 0;
+  header.sequence_number = mem::ToBigEndian(uint16_t(0));
+  header.timestamp = mem::ToBigEndian(uint32_t(0));
+  header.ssrc = mem::ToBigEndian(uint32_t(0));
 
   // Extension. Specific data related to oac. Mostly used for sync
   header.extension_id = Message::kDefaultExtensionID;
@@ -112,12 +112,15 @@ void Publisher::Publish() {
 
   // update message metadata
   auto header = message_.header();
-  auto sequence_number = mem::FromBigEndian(header.sequence_number);
+  
+  uint16_t sequence_number = mem::FromBigEndian(header.sequence_number);
   sequence_number += 1;
   header.sequence_number = mem::ToBigEndian(sequence_number);
-  auto timestamp = mem::FromBigEndian(header.timestamp);
+  
+  uint32_t timestamp = mem::FromBigEndian(header.timestamp);
   timestamp += message_.content_size();
   header.timestamp = mem::ToBigEndian(timestamp);
+  
   message_.set_header(header);
 }
 

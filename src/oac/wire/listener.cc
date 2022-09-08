@@ -102,8 +102,7 @@ void Listener::Run() {
     }
 
     // Push obtained data in the circular buffer
-    data_.set_push_index(reference_timestamp_,
-                         mem::FromBigEndian(header.timestamp));
+    data_.set_push_index(reference_timestamp_, mem::FromBigEndian(header.timestamp));
     data_.Push(message_.content(), message_.content_size());
 
     Run();

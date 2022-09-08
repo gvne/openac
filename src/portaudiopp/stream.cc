@@ -15,7 +15,8 @@ int DefaultStreamCallback(const void *input, void *output, unsigned long frameCo
 Stream::Stream(const Device& device) :
   device_index_(device.index()),
   input_channel_count_(device.max_input_channels()),
-  output_channel_count_(device.max_output_channels()) {}
+  output_channel_count_(device.max_output_channels()),
+  stream_(nullptr) {}
 
 Stream::~Stream() {
   if (is_running()) {
@@ -92,9 +93,13 @@ void Stream::Start(std::error_code& err) {
 
 void Stream::Stop(std::error_code& err) {
   err = pa::make_error_code(Pa_StopStream(stream_));
+  stream_ = nullptr;
 }
 
 bool Stream::is_running() const {
+  if (stream_ == nullptr) {
+    return false;
+  }
   return Pa_IsStreamActive(stream_) == 1;
 }
 

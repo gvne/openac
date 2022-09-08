@@ -13,7 +13,7 @@ void ListDevices() {
   auto devices = pa::Device::List(err);
   if (err) {
     spdlog::error("Could not list devices: {}", err.message());
-    return err.value();
+    return;
   }
   std::cout << "Devices (in/out channels)" << std::endl;
   for (const auto& device : devices) {
@@ -57,21 +57,21 @@ int main(int argc, char* argv[]) {
     std::cout << options.help({"", "Group"}) << std::endl;
     return 0;
   }
-  
+
   if (result["verbose"].as<bool>()) {
     spdlog::set_level(spdlog::level::debug);
   }
   pa::Context::Initialize();
-  
+
   if (result["list"].as<bool>()) {
     ListDevices();
     return 0;
   }
-  
+
   if (result["emit"].as<bool>()) {
     Emit(result["device"].as<int>());
   }
-  
+
   if (result["receive"].as<bool>()) {
     Receive(result["device"].as<int>());
   }

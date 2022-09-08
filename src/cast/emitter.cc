@@ -11,45 +11,48 @@ void Emitter::Run(std::error_code &err) {
   if (err) {
     return;
   }
-  
+
   auto device = GetDevice(err);
   if (err) {
     return;
   }
   spdlog::debug("Using device: {}", device.name());
-  
+
   auto stream = GetStream(device, err);
   if (err) {
     return;
   }
-  
+
   // Initialize the publisher
   pub_ = std::make_shared<oac::cable::Publisher>(context_, dntp_server_, stream.input_channel_count());
   pub_->Initialize(err);
   if (err) {
     return;
   }
-  
-  pub_->channel(0).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.10"), 50000));
-  pub_->channel(1).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.10"), 50001));
-  pub_->channel(0).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.101"), 50000));
-  pub_->channel(1).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.101"), 50000));
-  
+
+  // pub_->channel(0).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.10"), 50000));
+  // pub_->channel(1).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.10"), 50001));
+   pub_->channel(0).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.11"), 50000));
+   pub_->channel(1).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.11"), 50001));
+
+    pub_->channel(0).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("127.0.0.1"), 50000));
+    pub_->channel(1).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("127.0.0.1"), 50001));
+
   // -- Initialize the buffers
   stream_sample_rate_ = stream.sample_rate();
   stream_channel_count_ = stream.input_channel_count();
   channel_data_.resize(kMaxFrameCount);
   resampled_channel_data_.resize(kMaxFrameCount * sample_ratio());
   // --
-  
+
   stream.set_callback([this](const int16_t* input, int16_t* output, std::size_t frame_count){ Emit(input, frame_count); });
-  
+
   stream.Start(err);
   if (err) {
     spdlog::error("Could not start the stream: {}", err.message());
     return;
   }
-  
+
   context_.run(err);
 }
 
@@ -80,6 +83,7 @@ pa::Stream Emitter::GetStream(const pa::Device& device,
                               std::error_code& err) const {
   pa::Stream stream(device);
   stream.set_output_channel_count(0);  // We don't care about the inputs
+  stream.set_input_channel_count(2);  // TODO: enable stereo with an option
   stream.Open(kDesiredSampleRate, kMaxFrameCount, err);
   if (err) {
     spdlog::error("Could not open the stream: {}", err.message());
@@ -94,27 +98,27 @@ void Emitter::Emit(const int16_t* data, std::size_t frame_count) {
       auto sample_index = channel_index + channel_sample_index * stream_channel_count_;
       channel_data_[channel_sample_index] = data[sample_index];
     }
-    
+
     auto& data_to_send = channel_data_;
     auto data_size = frame_count;
-    
+
     // Interpolate data to 44100 if necessary
     if (stream_sample_rate_ != kDesiredSampleRate) {
       auto resampled_data_size = std::floor(frame_count * sample_ratio());
-      
+
       interpolator_.Run(channel_data_.data(), frame_count,
                         resampled_channel_data_.data(),
                         data_size);
-      
+
       data_to_send = resampled_channel_data_;
       data_size = resampled_data_size;
     }
-    
+
     // Convert data to big endian
     for (auto& sample : data_to_send) {
       sample = oac::mem::ToBigEndian(sample);
     }
-    
+
     // Publish !
     pub_->channel(channel_index).Publish(data_to_send.data(), data_size);
   }

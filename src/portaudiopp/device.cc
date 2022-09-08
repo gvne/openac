@@ -8,13 +8,14 @@
 namespace pa {
 
 std::vector<Device> Device::List(std::error_code& err) {
+  std::vector<Device> retval;
+
   auto count = Pa_GetDeviceCount();
   err = pa::make_error_code(count);
   if (err) {
-    return;
+    return retval;
   }
-  
-  std::vector<Device> retval;
+
   for (auto index = 0; index < count; index++) {
     Device device(index);
     device.Initialize(err);
@@ -25,7 +26,7 @@ std::vector<Device> Device::List(std::error_code& err) {
     }
     retval.emplace_back(std::move(device));
   }
-  
+
   return retval;
 }
 

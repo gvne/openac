@@ -47,7 +47,7 @@ void Publisher::Reset() {
   header.extension_ntp_server_address_ipv4_part2 = ipv4_addr[2];
   header.extension_ntp_server_address_ipv4_part3 = ipv4_addr[3];
   header.extension_reference_timestamp = dntp::timestamp::Pack(dntp_server_.Now());
-  
+
   message_.set_header(header);
   pending_sample_count_ = 0;
 }
@@ -112,8 +112,12 @@ void Publisher::Publish() {
 
   // update message metadata
   auto header = message_.header();
-  header.sequence_number += 1;
-  header.timestamp += message_.content_size();
+  auto sequence_number = mem::FromBigEndian(header.sequence_number);
+  sequence_number += 1;
+  header.sequence_number = mem::ToBigEndian(sequence_number);
+  auto timestamp = mem::FromBigEndian(header.timestamp);
+  timestamp += message_.content_size();
+  header.timestamp = mem::ToBigEndian(timestamp);
   message_.set_header(header);
 }
 

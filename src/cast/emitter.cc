@@ -31,7 +31,9 @@ void Emitter::Run(std::error_code &err) {
   }
   
   pub_->channel(0).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.10"), 50000));
-  pub_->channel(0).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.10"), 50001));
+  pub_->channel(1).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.10"), 50001));
+  pub_->channel(0).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.101"), 50000));
+  pub_->channel(1).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.101"), 50000));
   
   // -- Initialize the buffers
   stream_sample_rate_ = stream.sample_rate();

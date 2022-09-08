@@ -28,7 +28,7 @@ void Listener::Initialize(uint16_t port,
                           std::function<void()> on_stream_reset,
                           std::error_code& err) {
   on_stream_reset_ = on_stream_reset;
-  
+
   socket_.open(asio::ip::udp::v4(), err);
   if (err) {
     return;
@@ -87,16 +87,17 @@ void Listener::Run() {
 
     // If the reference timestamp changed it means that the stream got reset
     // We can reset the read content
-    if (reference_timestamp_ != header.extension_reference_timestamp || \
+    auto reference_timestamp = mem::FromBigEndian(header.extension_reference_timestamp);
+    if (reference_timestamp_ != reference_timestamp || \
         dntp_server_endpoint_ != dntp_server_endpoint) {
       spdlog::debug("wire - Reset stream");
-      reference_timestamp_ = header.extension_reference_timestamp;
+      reference_timestamp_ = reference_timestamp;
       dntp_server_endpoint_ = dntp_server_endpoint;
       data_.Clear();
       // execute the on_stream_reset callback asynchronously
       context_.post(on_stream_reset_);
     }
-    
+
     // reset the message with updated header (dntp server addr may change)
     message_.set_header(header);
 

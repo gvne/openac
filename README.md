@@ -30,3 +30,45 @@ The extension ID is x0001001100110111. Its 128bits are divided into:
 When receiving data from a new source, the listener connects to the DNTP server to
 determine the time offset between client and server. That offset is added to the
 desired stream latency.
+
+## Use case: cast Spotify to multiple devices
+
+On a raspberry pi zero equiped with a [DAC](https://shop.pimoroni.com/products/audio-dac-shim-line-out), I installed and configured [spotifyd](https://github.com/Spotifyd/spotifyd). Using [spotify connect](https://support.spotify.com/ca-en/article/spotify-connect/) I can now cast spotify to by raspberry pi.  
+Now, the idea is to send the pi output to a loopback device (supported by [alsa](https://www.alsa-project.org/wiki/Matrix:Module-aloop)) and to use our tool to send the audio stream of that loopback device on the network.
+```bash
+# Setup the loopback device and force it so that it appears even after a reboot
+sudo modprobe snd-aloop
+echo snd-aloop | sudo tee -a /etc/modules
+sudo reboot
+# Update the default output (see https://www.alsa-project.org/wiki/Setting_the_default_device)
+...
+# you can now check if your device records data using arecord (on my case loopback is device 0. Subdevice 1 was the one that recorded something)
+arecord -D hw:0,1 -V stereo -r 16000 -f S16_LE -c 2 /dev/null
+```
+
+Now that the device is ready, we can start publishing stuff !
+First we need to compile our casting tool:
+```bash
+sudo apt install git
+
+sudo apt install clang \
+libasound2-dev \
+libjack-jackd2-dev \
+ladspa-sdk \
+libcurl4-openssl-dev \
+libfreetype6-dev \
+libx11-dev \
+libxcursor-dev \
+libxext-dev \
+libxinerama-dev \
+libxrandr-dev \
+libxrender-dev \
+libxcomposite-dev
+
+
+sudo apt install libwebkit2gtk-4.0-dev \
+mesa-common-dev \
+libglu1-mesa-dev
+
+sudo apt install cmake
+```

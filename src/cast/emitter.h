@@ -23,7 +23,7 @@ class Emitter {
   double sample_ratio() const;
 
  private:
-  const uint64_t kMaxFrameCount = 512;
+  const uint64_t kMaxFrameCount = 2048;
   const double kDesiredSampleRate = 44100;
 
   asio::io_context context_;

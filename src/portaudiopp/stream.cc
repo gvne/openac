@@ -1,5 +1,7 @@
 #include "portaudiopp/stream.h"
 
+#include <cassert>
+
 #include "portaudio.h"
 #include <spdlog/spdlog.h>
 
@@ -8,6 +10,7 @@
 namespace pa {
 
 int DefaultStreamCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData) {
+  assert(statusFlags == 0);
   auto stream = reinterpret_cast<Stream*>(userData);
   return stream->OnData(input, output, frameCount);
 }

@@ -55,6 +55,7 @@ class Listener {
   void Synchronize(const asio::ip::udp::endpoint& dntp_server_address,
                    dntp::Client::Nanoseconds round_trip_delay,
                    dntp::Client::Nanoseconds time_offset);
+  void Synchronize(const asio::ip::udp::endpoint& dntp_server_address);
 
  private:
   asio::io_context& context_;
@@ -64,7 +65,7 @@ class Listener {
   std::vector<wire::Listener> listeners_;
 
   std::map<asio::ip::udp::endpoint, std::unique_ptr<dntp::Client>> dntp_clients_;
-  std::map<asio::ip::udp::endpoint, std::chrono::nanoseconds> latencies_;
+  std::map<asio::ip::udp::endpoint, std::chrono::nanoseconds> time_offsets_;
 };
 
 }  // namespace cable

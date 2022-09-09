@@ -84,19 +84,38 @@ void Listener::Synchronize(
     const asio::ip::udp::endpoint &dntp_server_address,
     dntp::Client::Nanoseconds round_trip_delay,
     dntp::Client::Nanoseconds time_offset) {
+  if (time_offsets_.find(dntp_server_address) == time_offsets_.end()) {
+    time_offsets_[dntp_server_address] = time_offset;
+    Synchronize(dntp_server_address);
+    return;
+  }
+  
+  auto delta = time_offset - time_offsets_[dntp_server_address];
+  auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
+  
+  // Synchronize only if the time offset changed by at least 25ms
+  if (std::abs(delta_ms.count()) < 25) {
+    return;
+  }
+  
+  time_offsets_[dntp_server_address] = time_offset;
+  Synchronize(dntp_server_address);
+}
+
+void Listener::Synchronize(const asio::ip::udp::endpoint &dntp_server_address) {
   auto now_hr = std::chrono::high_resolution_clock::now();
   auto delta = now_hr - hr_origin_;
   auto now = origin_ + std::chrono::duration_cast<std::chrono::system_clock::duration>(delta);
-  
+
   // We cast to milliseconds as the system_clock point is in ms
   auto lat_ms = std::chrono::duration_cast<std::chrono::milliseconds>(latency());
   now -= lat_ms;
 
   // Compensate for clock synchronization
-  auto to_ms = std::chrono::duration_cast<std::chrono::milliseconds>(time_offset);
+  auto to_ms = std::chrono::duration_cast<std::chrono::milliseconds>(time_offsets_[dntp_server_address]);
   now += to_ms;
 
-  spdlog::debug("cable - Time offset: {}ms", to_ms.count());
+  spdlog::debug("cable - Update time offset: {}ms", to_ms.count());
 
   for (auto& listener : listeners_) {
     if (listener.dntp_server_endpoint() != dntp_server_address) {

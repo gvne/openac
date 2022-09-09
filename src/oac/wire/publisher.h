@@ -6,6 +6,8 @@
 #include <array>
 
 #include "oac/dntp/server_interface.h"
+#include "oac/memory/circular_buffer.h"
+
 #include "oac/wire/publisher_interface.h"
 #include "oac/wire/message.h"
 
@@ -38,14 +40,17 @@ class Publisher : public PublisherInterface {
 
  private:
   void Publish();
+  void PublishMessage();
 
  private:
+  asio::io_context& context_;
   asio::ip::udp::socket socket_;
   const dntp::ServerInterface& dntp_server_;
   Message message_;
 
-  std::array<int16_t, Message::kSampleCount> pending_samples_;
-  std::size_t pending_sample_count_;
+  mem::CircularBuffer<int16_t> buffer_;
+//  std::array<int16_t, Message::kSampleCount> pending_samples_;
+//  std::size_t pending_sample_count_;
   std::list<asio::ip::udp::endpoint> receivers_addr_;
 
 };

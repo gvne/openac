@@ -24,6 +24,15 @@ public:
   std::size_t content_size() const {
     return content_.size();
   }
+  
+  /// The size of available data.
+  /// Note: invalid if we push content_size more values than we pushed
+  std::size_t size() const {
+    if (push_index_ > pop_index_) {
+      return push_index_ - pop_index_;
+    }
+    return push_index_ - content_size() + push_index_;
+  }
 
   /// \param index The index at which data should be pushed
   /// \note if larger than content_size, the value will be the rest of the

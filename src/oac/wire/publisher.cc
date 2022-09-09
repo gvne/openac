@@ -10,9 +10,11 @@ namespace wire {
 
 Publisher::Publisher(asio::io_context& context,
                      const dntp::ServerInterface& dntp_server) :
+  context_(context),
   socket_(context),
   dntp_server_(dntp_server),
-  pending_sample_count_(0) {}
+  buffer_(Message::kSampleCount * 100)  // TODO: find a clever way to initialize that buffer
+  {}
 
 void Publisher::Initialize(std::error_code& err) {
   socket_.open(asio::ip::udp::v4(), err);
@@ -49,55 +51,24 @@ void Publisher::Reset() {
   header.extension_reference_timestamp = dntp::timestamp::Pack(dntp_server_.Now());
 
   message_.set_header(header);
-  pending_sample_count_ = 0;
 }
 
 void Publisher::Publish(const int16_t* data, std::size_t sample_count) {
-  std::size_t index = 0;
-
-  // The first message to send should include the remaining data if any
-  if (pending_sample_count_ != 0) {
-    // Not enough data to send a message
-    if (pending_sample_count_ + sample_count < message_.content_size()) {
-      std::copy(data,
-                data + sample_count,
-                pending_samples_.data() + pending_sample_count_);
-      pending_sample_count_ += sample_count;
-      return;
-    }
-    // enough samples to send a message
-    // -- copy the pending samples
-    std::copy(pending_samples_.data(),
-              pending_samples_.data() + pending_sample_count_,
-              message_.content());
-    // -- copy the missing ones
-    auto missing_sample_count = message_.content_size() - pending_sample_count_;
-    std::copy(data,
-              data + missing_sample_count,
-              message_.content() + pending_sample_count_);
-    index = missing_sample_count;
-    pending_sample_count_ = 0;
-
+  buffer_.Push(data, sample_count);
+  context_.post([this](){
     Publish();
-  }
-
-  while (index + message_.content_size() < sample_count) {
-    // Fill data
-    std::copy(data + index,
-              data + index + message_.content_size(),
-              message_.content());
-    index += message_.content_size();
-
-    Publish();
-  }
-  // keep the remaining samples
-  std::copy(data + index,
-            data + sample_count,
-            pending_samples_.data());
-  pending_sample_count_ = sample_count - index;
+  });
 }
 
 void Publisher::Publish() {
+  while (buffer_.size() > Message::kSampleCount) {
+    spdlog::trace("Publishing {}", buffer_.size());
+    buffer_.Pop(message_.content(), message_.content_size());
+    PublishMessage();
+  }
+}
+
+void Publisher::PublishMessage() {
   spdlog::trace("wire - Publishing a new message");
   std::error_code err;
 

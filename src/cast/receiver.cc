@@ -76,7 +76,7 @@ pa::Stream Receiver::GetStream(const pa::Device& device,
                               std::error_code& err) const {
   pa::Stream stream(device);
   stream.set_input_channel_count(0);  // We don't care about the inputs
-  stream.set_output_channel_count(1);
+  stream.set_output_channel_count(2);
   stream.Open(kDesiredSampleRate, kMaxFrameCount, err);
   if (err) {
     spdlog::error("Could not open the stream: {}", err.message());
@@ -98,11 +98,11 @@ void Receiver::Receive(int16_t* data, double output_time, std::size_t frame_coun
 
     auto& channel_data = poped_channel_data_;
 
-    // Ineterplate 44100Hz data to desired rate
-    if (stream_sample_rate_ != kDesiredSampleRate) {
-      interpolator_.Run(poped_channel_data_.data(), poped_data_size, channel_data_.data(), frame_count);
-      channel_data = channel_data_;
-    }
+//    // Ineterplate 44100Hz data to desired rate
+//    if (stream_sample_rate_ != kDesiredSampleRate) {
+//      interpolator_.Run(poped_channel_data_.data(), poped_data_size, channel_data_.data(), frame_count);
+//      channel_data = channel_data_;
+//    }
 
     // copy data
     for (auto sample_index = 0; sample_index < frame_count; sample_index++) {

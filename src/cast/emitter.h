@@ -38,6 +38,7 @@ class Emitter {
 
   oac::dntp::Server dntp_server_;
   std::shared_ptr<oac::cable::Publisher> pub_;
+  std::chrono::system_clock::time_point last_set_origin_;
 };
 
 #endif  // CAST_EMITTER_H_

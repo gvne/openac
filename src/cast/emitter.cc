@@ -89,6 +89,7 @@ void Emitter::Emit(const int16_t* data, std::size_t frame_count) {
     stream_origin_ = std::chrono::high_resolution_clock::now();
     samples_since_origin_ = 0;
     emit_called_ = true;
+    is_stream_delayed_ = false;
   }
   
   // When callback is called, determine if the stream got delay for unknown reason
@@ -96,12 +97,23 @@ void Emitter::Emit(const int16_t* data, std::size_t frame_count) {
   auto expected_stream_origin = std::chrono::high_resolution_clock::now() - std::chrono::nanoseconds(static_cast<uint64_t>(stream_time_s * 1e9));
   auto delta = expected_stream_origin - stream_origin_;
   
-  // If delayed, reset the publisher and the stream itself
+  // If the stream has a delay over 50ms for more than 1second, reset it
   if (delta > std::chrono::milliseconds(50)) {
-    spdlog::warn("Emitter stream got delayed of {}ms. Resetting", std::chrono::duration_cast<std::chrono::milliseconds>(delta).count());
-    emit_called_ = false;
-    return;
+    if (!is_stream_delayed_) {
+      is_stream_delayed_ = true;
+      first_delay_tp_ = std::chrono::high_resolution_clock::now();
+    } else {
+      auto delay_duration = std::chrono::high_resolution_clock::now()- first_delay_tp_;
+      if (delay_duration >= std::chrono::seconds(1)) {
+        spdlog::warn("Emitter stream got delayed for {}ms. Resetting", std::chrono::duration_cast<std::chrono::milliseconds>(delay_duration).count());
+        emit_called_ = false;
+        return;
+      }
+    }
+  } else {
+    is_stream_delayed_ = false;
   }
+  
   samples_since_origin_ += frame_count;
   
   // Send data channel per channel

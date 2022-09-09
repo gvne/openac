@@ -35,6 +35,9 @@ class Emitter {
   bool emit_called_;
   std::chrono::high_resolution_clock::time_point stream_origin_;
   uint32_t samples_since_origin_;
+  
+  bool is_stream_delayed_;
+  std::chrono::high_resolution_clock::time_point first_delay_tp_;
 };
 
 #endif  // CAST_EMITTER_H_

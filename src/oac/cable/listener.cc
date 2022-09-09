@@ -14,6 +14,9 @@ Listener::Listener(asio::io_context& context, uint8_t channel_count):
 
 void Listener::Initialize(const std::vector<uint16_t>& channel_ports,
                           std::error_code& err) {
+  origin_ = std::chrono::system_clock::now();
+  hr_origin_ = std::chrono::high_resolution_clock::now();
+  
   assert(channel_ports.size() == listeners_.size());
   for (auto index = 0; index < channel_ports.size(); index++) {
     listeners_[index].Initialize(channel_ports[index], [this, index](){
@@ -81,7 +84,10 @@ void Listener::Synchronize(
     const asio::ip::udp::endpoint &dntp_server_address,
     dntp::Client::Nanoseconds round_trip_delay,
     dntp::Client::Nanoseconds time_offset) {
-  auto now = std::chrono::system_clock::now();
+  auto now_hr = std::chrono::high_resolution_clock::now();
+  auto delta = now_hr - hr_origin_;
+  auto now = origin_ + std::chrono::duration_cast<std::chrono::system_clock::duration>(delta);
+  
   // We cast to milliseconds as the system_clock point is in ms
   auto lat_ms = std::chrono::duration_cast<std::chrono::milliseconds>(latency());
   now -= lat_ms;

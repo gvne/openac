@@ -59,6 +59,8 @@ class Listener {
  private:
   asio::io_context& context_;
   std::chrono::nanoseconds latency_;
+  std::chrono::system_clock::time_point origin_;
+  std::chrono::high_resolution_clock::time_point hr_origin_;
   std::vector<wire::Listener> listeners_;
 
   std::map<asio::ip::udp::endpoint, std::unique_ptr<dntp::Client>> dntp_clients_;

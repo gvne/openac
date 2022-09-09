@@ -7,13 +7,16 @@ namespace dntp {
 
 Server::Server(asio::io_context& context) :
   context_(context),
-  socket_(context) {}
+  socket_(context){}
 
 void Server::Start(std::error_code& err) {
   Start(0, err);
 }
 
 void Server::Start(uint16_t port, std::error_code& err) {
+  origin_time_ = std::chrono::system_clock::now();
+  hr_origin_time_ = std::chrono::high_resolution_clock::now();
+  
   socket_.open(asio::ip::udp::v4(), err);
   if (err) {
     return;
@@ -68,7 +71,11 @@ void Server::Run() {
 }
 
 Timestamp Server::Now() const {
-  return timestamp::Now<std::chrono::system_clock>();
+  // Use the high resolution clock delta to determine the time instead of the less precise system clock
+  auto now_hr = std::chrono::high_resolution_clock::now();
+  auto delta = now_hr - hr_origin_time_;
+  auto now_system = origin_time_ + std::chrono::duration_cast<std::chrono::system_clock::duration>(delta);
+  return timestamp::FromTimePoint(now_system);
 }
 
 asio::ip::udp::endpoint Server::endpoint() const {

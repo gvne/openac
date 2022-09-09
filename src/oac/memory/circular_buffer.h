@@ -31,7 +31,7 @@ public:
     if (push_index_ > pop_index_) {
       return push_index_ - pop_index_;
     }
-    return push_index_ - content_size() + push_index_;
+    return (content_size() - pop_index_) + push_index_;
   }
 
   /// \param index The index at which data should be pushed

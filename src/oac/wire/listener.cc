@@ -87,14 +87,9 @@ void Listener::Run() {
 
     // If the reference timestamp changed it means that the stream got reset
     // We can reset the read content
-    auto has_same_timestamp = \
-      reference_timestamp_ == header.extension_reference_timestamp;
     auto has_same_endpoint = dntp_server_endpoint_ == dntp_server_endpoint;
-    if (!(has_same_timestamp && has_same_endpoint)) {
+    if (!has_same_endpoint) {
       spdlog::debug("wire - Reset stream");
-      spdlog::debug("Timestamp updated {} - Endpoint updated {}",
-                    !has_same_timestamp, !has_same_endpoint);
-      reference_timestamp_ = header.extension_reference_timestamp;
       dntp_server_endpoint_ = dntp_server_endpoint;
       data_.Clear();
       // execute the on_stream_reset callback asynchronously
@@ -102,7 +97,7 @@ void Listener::Run() {
     }
 
     // Push obtained data in the circular buffer
-    data_.set_push_index(reference_timestamp_, mem::FromBigEndian(header.timestamp));
+    data_.set_push_index(header.extension_reference_timestamp, mem::FromBigEndian(header.timestamp));
     data_.Push(message_.content(), message_.content_size());
 
     Run();

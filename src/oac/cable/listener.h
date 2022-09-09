@@ -62,6 +62,7 @@ class Listener {
   std::vector<wire::Listener> listeners_;
 
   std::map<asio::ip::udp::endpoint, std::unique_ptr<dntp::Client>> dntp_clients_;
+  std::map<asio::ip::udp::endpoint, std::chrono::nanoseconds> latencies_;
 };
 
 }  // namespace cable

@@ -13,7 +13,9 @@ namespace pa {
 class Stream {
  public:
   using Callback = std::function<void(
-    const int16_t* input, int16_t* output, std::size_t frame_count)>;
+    const int16_t* input, double input_time,
+    int16_t* output, double output_time,
+    std::size_t frame_count)>;
 
   Stream(const Device& device);
   ~Stream();
@@ -32,7 +34,9 @@ class Stream {
   bool is_running() const;
 
   void set_callback(Callback callback);
-  int OnData(const void *input, void *output, unsigned long frameCount);
+  int OnData(const void *input, double input_time,
+             void *output, double output_time,
+             unsigned long frameCount);
 
  private:
   int device_index_;
@@ -41,6 +45,9 @@ class Stream {
   Callback callback_;
 
   PaStream* stream_;
+  bool data_received_;
+  double first_input_time_;
+  double first_output_time_;
 };
 
 }  // namespace pa

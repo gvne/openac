@@ -12,14 +12,17 @@ namespace pa {
 int DefaultStreamCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags, void *userData) {
   assert(statusFlags == 0);
   auto stream = reinterpret_cast<Stream*>(userData);
-  return stream->OnData(input, output, frameCount);
+  return stream->OnData(input, timeInfo->inputBufferAdcTime,
+                        output, timeInfo->outputBufferDacTime,
+                        frameCount);
 }
 
 Stream::Stream(const Device& device) :
   device_index_(device.index()),
   input_channel_count_(device.max_input_channels()),
   output_channel_count_(device.max_output_channels()),
-  stream_(nullptr) {}
+  stream_(nullptr),
+  data_received_(false) {}
 
 Stream::~Stream() {
   if (is_running()) {
@@ -107,14 +110,27 @@ bool Stream::is_running() const {
 }
 
 void Stream::set_callback(Callback callback) {
-  // TODO: should lock
+  // TODO: should lock instead ?
+  assert(!is_running());
   callback_ = callback;
 }
 
-int Stream::OnData(const void *vinput, void *voutput, unsigned long frameCount) {
+int Stream::OnData(const void *vinput, double input_time,
+                   void *voutput, double output_time,
+                   unsigned long frameCount) {
+  if (!data_received_) {
+    first_input_time_ = input_time;
+    first_output_time_ = output_time;
+    data_received_ = true;
+  }
+  
   auto input = reinterpret_cast<const int16_t*>(vinput);
   auto output = reinterpret_cast<int16_t*>(voutput);
-  callback_(input, output, frameCount);
+  
+  callback_(input, input_time - first_input_time_,
+            output, output_time - first_output_time_,
+            frameCount);
+  
   return paContinue;
 }
 

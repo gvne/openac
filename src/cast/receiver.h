@@ -17,7 +17,8 @@ class Receiver {
   pa::Device GetDevice(std::error_code& err) const;
   pa::Stream GetStream(const pa::Device& device,
                        std::error_code& err) const;
-  void Receive(int16_t* data, std::size_t frame_count);
+  void Receive(int16_t* data, double output_time,
+               std::size_t frame_count);
   double sample_ratio() const;
 
  private:

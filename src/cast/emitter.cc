@@ -33,10 +33,10 @@ void Emitter::Run(std::error_code &err) {
   // pub_->channel(0).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.10"), 50000));
   // pub_->channel(1).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.10"), 50001));
    pub_->channel(0).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.11"), 50000));
-   pub_->channel(1).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.11"), 50001));
-
+//   pub_->channel(1).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("192.168.1.11"), 50001));
+//
     pub_->channel(0).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("127.0.0.1"), 50000));
-    pub_->channel(1).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("127.0.0.1"), 50001));
+//    pub_->channel(1).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string("127.0.0.1"), 50001));
 
   // -- Initialize the buffers
   stream_sample_rate_ = stream.sample_rate();
@@ -45,7 +45,9 @@ void Emitter::Run(std::error_code &err) {
   resampled_channel_data_.resize(kMaxFrameCount * sample_ratio());
   // --
 
-  stream.set_callback([this](const int16_t* input, int16_t* output, std::size_t frame_count){ Emit(input, frame_count); });
+  stream.set_callback([this](const int16_t* input, double input_time, int16_t* output, double output_time, std::size_t frame_count){
+    Emit(input, input_time, frame_count);
+  });
 
   stream.Start(err);
   if (err) {
@@ -83,7 +85,7 @@ pa::Stream Emitter::GetStream(const pa::Device& device,
                               std::error_code& err) const {
   pa::Stream stream(device);
   stream.set_output_channel_count(0);  // We don't care about the inputs
-  stream.set_input_channel_count(2);  // TODO: enable stereo with an option
+  stream.set_input_channel_count(1);  // TODO: enable stereo with an option
   stream.Open(kDesiredSampleRate, kMaxFrameCount, err);
   if (err) {
     spdlog::error("Could not open the stream: {}", err.message());
@@ -92,7 +94,13 @@ pa::Stream Emitter::GetStream(const pa::Device& device,
   return stream;
 }
 
-void Emitter::Emit(const int16_t* data, std::size_t frame_count) {
+void Emitter::Emit(const int16_t* data, double input_time, std::size_t frame_count) {
+  auto now = std::chrono::system_clock::now();
+  auto stream_origin = now - std::chrono::milliseconds(static_cast<int>(input_time * 1000));
+  auto dntp_origin = oac::dntp::timestamp::FromTimePoint(stream_origin);
+  auto packed_dntp_origin = oac::dntp::timestamp::Pack(dntp_origin);
+  auto expected_timestamp = std::round(input_time * kDesiredSampleRate);
+  
   for (auto channel_index = 0; channel_index < stream_channel_count_; channel_index++) {
     for (auto channel_sample_index = 0; channel_sample_index < frame_count; channel_sample_index++) {
       auto sample_index = channel_index + channel_sample_index * stream_channel_count_;
@@ -120,6 +128,7 @@ void Emitter::Emit(const int16_t* data, std::size_t frame_count) {
     }
 
     // Publish !
+    pub_->channel(channel_index).set_timestamps(expected_timestamp, packed_dntp_origin);
     pub_->channel(channel_index).Publish(data_to_send.data(), data_size);
   }
 }

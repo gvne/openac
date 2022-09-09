@@ -36,7 +36,9 @@ void Receiver::Run(std::error_code &err) {
   poped_channel_data_.resize(kMaxFrameCount * sample_ratio());
   // --
   
-  stream.set_callback([this](const int16_t* input, int16_t* output, std::size_t frame_count){ Receive(output, frame_count); });
+  stream.set_callback([this](const int16_t* input, double input_time, int16_t* output, double output_time, std::size_t frame_count){
+    Receive(output, output_time, frame_count);
+  });
   
   stream.Start(err);
   if (err) {
@@ -74,6 +76,7 @@ pa::Stream Receiver::GetStream(const pa::Device& device,
                               std::error_code& err) const {
   pa::Stream stream(device);
   stream.set_input_channel_count(0);  // We don't care about the inputs
+  stream.set_output_channel_count(1);
   stream.Open(kDesiredSampleRate, kMaxFrameCount, err);
   if (err) {
     spdlog::error("Could not open the stream: {}", err.message());
@@ -82,7 +85,8 @@ pa::Stream Receiver::GetStream(const pa::Device& device,
   return stream;
 }
 
-void Receiver::Receive(int16_t* data, std::size_t frame_count) {
+void Receiver::Receive(int16_t* data, double output_time, std::size_t frame_count) {
+  
   for (auto channel_index = 0; channel_index < stream_channel_count_; channel_index++) {
     auto poped_data_size = std::floor(frame_count * sample_ratio());
     sub_->Pop(poped_channel_data_.data(), poped_data_size, channel_index);

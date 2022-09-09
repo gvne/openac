@@ -19,7 +19,8 @@ class Emitter {
   pa::Stream GetStream(const pa::Device& device,
                        std::error_code& err) const;
 
-  void Emit(const int16_t* data, std::size_t frame_count);
+  void Emit(const int16_t* data, double input_time,
+            std::size_t frame_count);
   double sample_ratio() const;
 
  private:

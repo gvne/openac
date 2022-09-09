@@ -96,7 +96,6 @@ void Listener::Synchronize(
     if (listener.dntp_server_endpoint() != dntp_server_address) {
       continue;  // not the right dntp server
     }
-    auto tp = now + latency_ - time_offset;
     listener.output().Synchronize(now);
   }
 }

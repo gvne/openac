@@ -12,6 +12,8 @@ class Receiver {
  public:
   Receiver(int device_index);
   void Run(std::error_code& err);
+  
+  static const uint16_t kDefaultPort = 50000;
 
  private:
   pa::Device GetDevice(std::error_code& err) const;
@@ -20,7 +22,6 @@ class Receiver {
  private:
   const uint64_t kMaxFrameCount = 2048;
   const double kSampleRate = 44100;
-  const uint16_t kDefaultPort = 50000;
 
   asio::io_context context_;
 

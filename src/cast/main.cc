@@ -21,10 +21,10 @@ void ListDevices() {
   }
 }
 
-void Emit(int device_index) {
+void Emit(int device_index, const std::vector<std::string>& addrs) {
   std::error_code err;
   Emitter emitter(device_index);
-  emitter.Run(err);
+  emitter.Run(addrs, err);
   if (err) {
     spdlog::error("Failed to emit: {}", err.message());
     return;
@@ -50,7 +50,8 @@ int main(int argc, char* argv[]) {
       ("l,list", "List available devices", cxxopts::value<bool>()->default_value("false"))
       ("d,device", "The device index", cxxopts::value<int>()->default_value("-1"))
       ("e,emit", "Emit", cxxopts::value<bool>()->default_value("false"))
-      ("r,receive", "Receive", cxxopts::value<bool>()->default_value("false"));
+      ("r,receive", "Receive", cxxopts::value<bool>()->default_value("false"))
+      ("addr", "Addresses", cxxopts::value<std::vector<std::string>>()->default_value("127.0.0.1"));
 
   auto result = options.parse(argc, argv);
   if (result.count("help")) {
@@ -69,7 +70,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (result["emit"].as<bool>()) {
-    Emit(result["device"].as<int>());
+    Emit(result["device"].as<int>(), result["addr"].as<std::vector<std::string>>());
   }
 
   if (result["receive"].as<bool>()) {

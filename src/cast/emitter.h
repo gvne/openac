@@ -12,7 +12,7 @@
 class Emitter {
  public:
   Emitter(int device_index);
-  void Run(std::error_code& err);
+  void Run(const std::vector<std::string>& addrs, std::error_code& err);
 
  private:
   pa::Device GetDevice(std::error_code& err) const;

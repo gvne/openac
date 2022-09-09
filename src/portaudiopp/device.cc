@@ -82,4 +82,18 @@ double Device::default_sample_rate() const {
 }
 
 
+double Device::default_high_input_latency() const {
+  return info_->defaultHighInputLatency;
+}
+double Device::default_low_input_latency() const {
+  return info_->defaultLowInputLatency;
+}
+double Device::default_high_output_latency() const {
+  return info_->defaultHighOutputLatency;
+}
+double Device::default_low_output_latency() const {
+  return info_->defaultLowOutputLatency;
+}
+
+
 }  // namespace pa

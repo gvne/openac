@@ -22,7 +22,10 @@ Stream::Stream(const Device& device) :
   input_channel_count_(device.max_input_channels()),
   output_channel_count_(device.max_output_channels()),
   stream_(nullptr),
-  data_received_(false) {}
+  data_received_(false),
+  input_latency_(device.default_low_input_latency()),
+  output_latency_(device.default_low_output_latency())
+  {}
 
 Stream::~Stream() {
   if (is_running()) {
@@ -59,7 +62,7 @@ void Stream::Open(double desired_sample_rate, uint64_t frames_per_buffer, std::e
     input_stream_parameters->channelCount = input_channel_count();
     input_stream_parameters->device = device_index_;
     input_stream_parameters->sampleFormat = paInt16;
-    input_stream_parameters->suggestedLatency = 0;
+    input_stream_parameters->suggestedLatency = input_latency_;
     input_stream_parameters->hostApiSpecificStreamInfo = nullptr;
   }
   std::shared_ptr<PaStreamParameters> output_stream_parameters;
@@ -68,10 +71,10 @@ void Stream::Open(double desired_sample_rate, uint64_t frames_per_buffer, std::e
     output_stream_parameters->channelCount = output_channel_count();
     output_stream_parameters->device = device_index_;
     output_stream_parameters->sampleFormat = paInt16;
-    output_stream_parameters->suggestedLatency = 0;
+    output_stream_parameters->suggestedLatency = output_latency_;
     output_stream_parameters->hostApiSpecificStreamInfo = nullptr;
   }
-  
+
   auto errc = Pa_OpenStream(
     &stream_,
     input_stream_parameters.get(),
@@ -81,7 +84,7 @@ void Stream::Open(double desired_sample_rate, uint64_t frames_per_buffer, std::e
     0,
     DefaultStreamCallback,
     this);
-  
+
   err = pa::make_error_code(errc);
 }
 
@@ -123,14 +126,14 @@ int Stream::OnData(const void *vinput, double input_time,
     first_output_time_ = output_time;
     data_received_ = true;
   }
-  
+
   auto input = reinterpret_cast<const int16_t*>(vinput);
   auto output = reinterpret_cast<int16_t*>(voutput);
-  
+
   callback_(input, input_time - first_input_time_,
             output, output_time - first_output_time_,
             frameCount);
-  
+
   return paContinue;
 }
 

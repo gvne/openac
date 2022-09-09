@@ -22,6 +22,11 @@ class Device {
   int max_input_channels() const;
   int max_output_channels() const;
   double default_sample_rate() const;
+  
+  double default_high_input_latency() const;
+  double default_low_input_latency() const;
+  double default_high_output_latency() const;
+  double default_low_output_latency() const;
 
  private:
   int index_;

@@ -17,7 +17,7 @@ void ListDevices() {
   }
   std::cout << "Devices (in/out channels)" << std::endl;
   for (const auto& device : devices) {
-    std::cout << device.index() << " - " << device.name() << " (" << device.max_input_channels() << "/" << device.max_output_channels() << ")" << std::endl;
+    std::cout << device.index() << " - " << device.name() << " (" << device.max_input_channels() << "/" << device.max_output_channels() << " - latency " << device.default_low_input_latency() << "/" << device.default_high_input_latency() << ")"<< std::endl;
   }
 }
 

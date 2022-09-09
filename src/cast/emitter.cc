@@ -41,7 +41,7 @@ void Emitter::Run(const std::vector<std::string>& addrs, std::error_code &err) {
   if (err) {
     return;
   }
-  
+
   for (auto channel_idx = 0; channel_idx < pub_->channel_count(); channel_idx++) {
     for (const auto& endpoint : addrs) {
       pub_->channel(channel_idx).AddSubscriber(asio::ip::udp::endpoint(asio::ip::address::from_string(endpoint), Receiver::kDefaultPort + channel_idx));
@@ -102,7 +102,7 @@ void Emitter::Emit(const int16_t* data, std::size_t frame_count) {
       is_stream_delayed_ = true;
       first_delay_tp_ = std::chrono::high_resolution_clock::now();
     } else {
-      auto delay_duration = std::chrono::high_resolution_clock::now()- first_delay_tp_;
+      auto delay_duration = std::chrono::high_resolution_clock::now() - first_delay_tp_;
       if (delay_duration >= std::chrono::seconds(1)) {
         spdlog::warn("Emitter stream got delayed for {}ms. Resetting", std::chrono::duration_cast<std::chrono::milliseconds>(delay_duration).count());
         emit_called_ = false;

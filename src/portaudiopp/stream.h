@@ -48,6 +48,9 @@ class Stream {
   bool data_received_;
   double first_input_time_;
   double first_output_time_;
+  
+  double input_latency_;
+  double output_latency_;
 };
 
 }  // namespace pa

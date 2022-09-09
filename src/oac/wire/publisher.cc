@@ -55,9 +55,9 @@ void Publisher::Reset() {
 
 void Publisher::Publish(const int16_t* data, std::size_t sample_count) {
   buffer_.Push(data, sample_count);
-  context_.post([this](){
-    Publish();
-  });
+//  context_.post([this](){
+  Publish();
+//  });
 }
 
 void Publisher::Publish() {

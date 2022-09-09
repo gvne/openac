@@ -5,6 +5,7 @@
 
 Emitter::Emitter(int device_index) :
   device_index_(device_index),
+  channel_data_(kDefaultFrameCount),
   dntp_server_(context_),
   emit_called_(false) {}
 
@@ -24,14 +25,13 @@ void Emitter::Run(const std::vector<std::string>& addrs, std::error_code &err) {
   pa::Stream stream(device);
   stream.set_output_channel_count(0);  // We don't care about the inputs
   stream.set_input_channel_count(2);  // TODO: enable stereo with an option
-  stream.Open(kSampleRate, kMaxFrameCount, err);
+  stream.Open(kSampleRate, err);
   if (err) {
     spdlog::error("Could not open the stream: {}", err.message());
     return;
   }
   assert(stream.sample_rate() == kSampleRate);
   stream_channel_count_ = stream.input_channel_count();
-  channel_data_.resize(kMaxFrameCount);
   spdlog::debug("Stream initialized");
 
 
@@ -82,6 +82,8 @@ pa::Device Emitter::GetDevice(std::error_code& err) const {
 }
 
 void Emitter::Emit(const int16_t* data, std::size_t frame_count) {
+//  spdlog::info("{}", frame_count);
+  
   // Keep the stream origin in memory
   if (!emit_called_) {
     pub_->Reset();
@@ -114,6 +116,12 @@ void Emitter::Emit(const int16_t* data, std::size_t frame_count) {
   }
 
   samples_since_origin_ += frame_count;
+  
+  if (frame_count > channel_data_.size()) {
+    // TODO: this is a problem. Allocating memory at runtime may fail
+    spdlog::debug("Resizing buffers");
+    channel_data_.resize(frame_count);
+  }
 
   // Send data channel per channel
   for (auto channel_index = 0; channel_index < stream_channel_count_; channel_index++) {
@@ -123,8 +131,8 @@ void Emitter::Emit(const int16_t* data, std::size_t frame_count) {
     }
 
     // Convert data to big endian
-    for (auto& sample : channel_data_) {
-      sample = oac::mem::ToBigEndian(sample);
+    for (auto index = 0; index < frame_count; index++) {
+      channel_data_[index] = oac::mem::ToBigEndian(channel_data_[index]);
     }
 
     // Publish !

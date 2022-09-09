@@ -55,14 +55,14 @@ void Stream::set_output_channel_count(int v) {
   output_channel_count_ = v;
 }
 
-void Stream::Open(double desired_sample_rate, uint64_t frames_per_buffer, std::error_code &err) {
+void Stream::Open(double desired_sample_rate, std::error_code &err) {
   std::shared_ptr<PaStreamParameters> input_stream_parameters;
   if (input_channel_count() != 0) {
     input_stream_parameters = std::make_shared<PaStreamParameters>();
     input_stream_parameters->channelCount = input_channel_count();
     input_stream_parameters->device = device_index_;
     input_stream_parameters->sampleFormat = paInt16;
-    input_stream_parameters->suggestedLatency = input_latency_;
+    input_stream_parameters->suggestedLatency = 0;
     input_stream_parameters->hostApiSpecificStreamInfo = nullptr;
   }
   std::shared_ptr<PaStreamParameters> output_stream_parameters;
@@ -71,7 +71,7 @@ void Stream::Open(double desired_sample_rate, uint64_t frames_per_buffer, std::e
     output_stream_parameters->channelCount = output_channel_count();
     output_stream_parameters->device = device_index_;
     output_stream_parameters->sampleFormat = paInt16;
-    output_stream_parameters->suggestedLatency = output_latency_;
+    output_stream_parameters->suggestedLatency = 0;
     output_stream_parameters->hostApiSpecificStreamInfo = nullptr;
   }
 
@@ -80,7 +80,7 @@ void Stream::Open(double desired_sample_rate, uint64_t frames_per_buffer, std::e
     input_stream_parameters.get(),
     output_stream_parameters.get(),
     desired_sample_rate,
-    frames_per_buffer,
+    paFramesPerBufferUnspecified,  // let the system decide of frame per buffer
     0,
     DefaultStreamCallback,
     this);

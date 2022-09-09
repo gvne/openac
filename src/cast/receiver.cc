@@ -3,7 +3,8 @@
 #include "oac/memory/endian.h"
 
 Receiver::Receiver(int device_index) :
-  device_index_(device_index) {}
+  device_index_(device_index),
+  channel_data_(kDefaultFrameCount) {}
 
 void Receiver::Run(std::error_code &err) {
   auto device = GetDevice(err);
@@ -15,13 +16,12 @@ void Receiver::Run(std::error_code &err) {
   pa::Stream stream(device);
   stream.set_input_channel_count(0);  // We don't care about the inputs
   stream.set_output_channel_count(2);
-  stream.Open(kSampleRate, kMaxFrameCount, err);
+  stream.Open(kSampleRate, err);
   if (err) {
     spdlog::error("Could not open the stream: {}", err.message());
     return;
   }
   stream_channel_count_ = stream.output_channel_count();
-  channel_data_.resize(kMaxFrameCount);
   spdlog::debug("Stream initialized");
   
   // Initialize the publisher
@@ -70,17 +70,18 @@ pa::Device Receiver::GetDevice(std::error_code& err) const {
 }
 
 void Receiver::Receive(int16_t* data, std::size_t frame_count) {
+  if (frame_count > channel_data_.size()) {
+    // TODO: this is a problem. Allocating memory at runtime may fail
+    spdlog::debug("Resizing buffers");
+    channel_data_.resize(frame_count);
+  }
+  
   for (auto channel_index = 0; channel_index < stream_channel_count_; channel_index++) {
     sub_->Pop(channel_data_.data(), frame_count, channel_index);
 
     // Convert data from big endian
-    for (auto& sample : channel_data_) {
-      sample = oac::mem::FromBigEndian(sample);
-    }
-
-    // copy data
     for (auto sample_index = 0; sample_index < frame_count; sample_index++) {
-      data[channel_index + sample_index * stream_channel_count_] = channel_data_[sample_index];
+      data[channel_index + sample_index * stream_channel_count_] = oac::mem::FromBigEndian(channel_data_[sample_index]);
     }
   }
 }

@@ -20,7 +20,7 @@ class Receiver {
   void Receive(int16_t* data, std::size_t frame_count);
 
  private:
-  const uint64_t kMaxFrameCount = 2048;
+  const uint64_t kDefaultFrameCount = 4096;
   const double kSampleRate = 44100;
 
   asio::io_context context_;

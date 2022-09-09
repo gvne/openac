@@ -25,7 +25,7 @@ class Stream {
   void set_input_channel_count(int v);  // TODO: assert if stream is running
   void set_output_channel_count(int v);  // TODO: assert if stream is running
 
-  void Open(double desired_sample_rate, uint64_t frames_per_buffer, std::error_code& err);
+  void Open(double desired_sample_rate, std::error_code& err);
 
   double sample_rate() const;
 

@@ -124,14 +124,5 @@ void Publisher::Publish() {
   message_.set_header(header);
 }
 
-void Publisher::set_timestamps(uint32_t rtp, uint64_t dntp) {
-  auto header = message_.header();
-  uint32_t sample_since_stream_started = rtp - pending_sample_count_;
-  header.timestamp = mem::ToBigEndian(sample_since_stream_started);
-  // note: don't need to convert to big endian as it has already been packed
-  header.extension_reference_timestamp = dntp;
-  message_.set_header(header);
-}
-
 }  // namespace wire
 }  // namespace oac

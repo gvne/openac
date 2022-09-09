@@ -16,29 +16,25 @@ class Emitter {
 
  private:
   pa::Device GetDevice(std::error_code& err) const;
-  pa::Stream GetStream(const pa::Device& device,
-                       std::error_code& err) const;
 
-  void Emit(const int16_t* data, double input_time,
-            std::size_t frame_count);
-  double sample_ratio() const;
+  void Emit(const int16_t* data, std::size_t frame_count);
 
  private:
   const uint64_t kMaxFrameCount = 2048;
-  const double kDesiredSampleRate = 44100;
+  const double kSampleRate = 44100;
 
   asio::io_context context_;
 
   int device_index_;
-  double stream_sample_rate_;
   uint8_t stream_channel_count_;
   std::vector<int16_t> channel_data_;
-  std::vector<int16_t> resampled_channel_data_;
-  resample::Interpolator<int16_t> interpolator_;
 
   oac::dntp::Server dntp_server_;
   std::shared_ptr<oac::cable::Publisher> pub_;
-  std::chrono::system_clock::time_point last_set_origin_;
+  
+  bool emit_called_;
+  std::chrono::high_resolution_clock::time_point stream_origin_;
+  uint32_t samples_since_origin_;
 };
 
 #endif  // CAST_EMITTER_H_

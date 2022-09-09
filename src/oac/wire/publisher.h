@@ -35,11 +35,6 @@ class Publisher : public PublisherInterface {
   /// \param data pointer to the first byte to publish
   /// \param sample_count the number of samples to send
   void Publish(const int16_t* data, std::size_t sample_count) override;
-  
-  /// Update the sent timestamp. Useful when the stream stopped for unknown reasons
-  /// \param rtp the rtp timestamp (number of samples since start of stream)
-  /// \param dntp the dntp timestamp (origin of the stream as obtained by oac::dntp::timestamp)
-  void set_timestamps(uint32_t rtp, uint64_t dntp) override;
 
  private:
   void Publish();

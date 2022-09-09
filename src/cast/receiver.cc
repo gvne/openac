@@ -3,7 +3,7 @@
 #include "oac/memory/endian.h"
 
 Receiver::Receiver(int device_index) :
-  device_index_(device_index), sample_(0) {}
+  device_index_(device_index) {}
 
 void Receiver::Run(std::error_code &err) {
   auto device = GetDevice(err);
@@ -12,16 +12,23 @@ void Receiver::Run(std::error_code &err) {
   }
   spdlog::debug("Using device: {}", device.name());
   
-  auto stream = GetStream(device, err);
+  pa::Stream stream(device);
+  stream.set_input_channel_count(0);  // We don't care about the inputs
+  stream.set_output_channel_count(2);
+  stream.Open(kSampleRate, kMaxFrameCount, err);
   if (err) {
+    spdlog::error("Could not open the stream: {}", err.message());
     return;
   }
+  stream_channel_count_ = stream.output_channel_count();
+  channel_data_.resize(kMaxFrameCount);
+  spdlog::debug("Stream initialized");
   
   // Initialize the publisher
   sub_ = std::make_shared<oac::cable::Listener>(context_, stream.output_channel_count());
   std::vector<uint16_t> channel_ports;
   for (auto channel_index = 0; channel_index < stream.output_channel_count(); channel_index++) {
-    channel_ports.push_back(50000 + channel_index);
+    channel_ports.push_back(kDefaultPort + channel_index);
   }
   
   sub_->Initialize(channel_ports, err);
@@ -29,15 +36,8 @@ void Receiver::Run(std::error_code &err) {
     return;
   }
   
-  // -- Initialize the buffers
-  stream_sample_rate_ = stream.sample_rate();
-  stream_channel_count_ = stream.output_channel_count();
-  channel_data_.resize(kMaxFrameCount);
-  poped_channel_data_.resize(kMaxFrameCount * sample_ratio());
-  // --
-  
   stream.set_callback([this](const int16_t* input, double input_time, int16_t* output, double output_time, std::size_t frame_count){
-    Receive(output, output_time, frame_count);
+    Receive(output, frame_count);
   });
   
   stream.Start(err);
@@ -45,12 +45,9 @@ void Receiver::Run(std::error_code &err) {
     spdlog::error("Could not start the stream: {}", err.message());
     return;
   }
+  spdlog::debug("Stream running");
   
   context_.run(err);
-}
-
-double Receiver::sample_ratio() const {
-  return stream_sample_rate_ / kDesiredSampleRate;
 }
 
 pa::Device Receiver::GetDevice(std::error_code& err) const {
@@ -72,42 +69,18 @@ pa::Device Receiver::GetDevice(std::error_code& err) const {
   return device;
 }
 
-pa::Stream Receiver::GetStream(const pa::Device& device,
-                              std::error_code& err) const {
-  pa::Stream stream(device);
-  stream.set_input_channel_count(0);  // We don't care about the inputs
-  stream.set_output_channel_count(2);
-  stream.Open(kDesiredSampleRate, kMaxFrameCount, err);
-  if (err) {
-    spdlog::error("Could not open the stream: {}", err.message());
-    return stream;
-  }
-  return stream;
-}
-
-void Receiver::Receive(int16_t* data, double output_time, std::size_t frame_count) {
-  
+void Receiver::Receive(int16_t* data, std::size_t frame_count) {
   for (auto channel_index = 0; channel_index < stream_channel_count_; channel_index++) {
-    auto poped_data_size = std::floor(frame_count * sample_ratio());
-    sub_->Pop(poped_channel_data_.data(), poped_data_size, channel_index);
+    sub_->Pop(channel_data_.data(), frame_count, channel_index);
 
     // Convert data from big endian
-    for (auto& sample : poped_channel_data_) {
+    for (auto& sample : channel_data_) {
       sample = oac::mem::FromBigEndian(sample);
     }
 
-    auto& channel_data = poped_channel_data_;
-
-//    // Ineterplate 44100Hz data to desired rate
-//    if (stream_sample_rate_ != kDesiredSampleRate) {
-//      interpolator_.Run(poped_channel_data_.data(), poped_data_size, channel_data_.data(), frame_count);
-//      channel_data = channel_data_;
-//    }
-
     // copy data
     for (auto sample_index = 0; sample_index < frame_count; sample_index++) {
-      data[channel_index + sample_index * stream_channel_count_] = channel_data[sample_index];
+      data[channel_index + sample_index * stream_channel_count_] = channel_data_[sample_index];
     }
   }
-  sample_ += frame_count;
 }

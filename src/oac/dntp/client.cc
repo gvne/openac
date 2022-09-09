@@ -15,6 +15,9 @@ Client::Client(asio::io_context& context) :
 void Client::Start(asio::ip::udp::endpoint server_addr,
                    UpdateCallback callback,
                    std::error_code &err) {
+  origin_time_ = std::chrono::system_clock::now();
+  hr_origin_time_ = std::chrono::high_resolution_clock::now();
+  
   callback_ = callback;
   socket_.open(asio::ip::udp::v4(), err);
   if (err) {
@@ -72,7 +75,11 @@ void Client::SendRequest() {
 }
 
 Timestamp Client::Now() const {
-  return timestamp::Now<std::chrono::system_clock>();
+  // Use the high resolution clock delta to determine the time instead of the less precise system clock
+  auto now_hr = std::chrono::high_resolution_clock::now();
+  auto delta = now_hr - hr_origin_time_;
+  auto now_system = origin_time_ + std::chrono::duration_cast<std::chrono::system_clock::duration>(delta);
+  return timestamp::FromTimePoint(now_system);
 }
 
 void Client::set_period(std::chrono::milliseconds period) {

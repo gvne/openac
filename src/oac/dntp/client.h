@@ -52,6 +52,9 @@ class Client {
 
   Message sent_message_;
   Message received_message_;
+  
+  std::chrono::system_clock::time_point origin_time_;
+  std::chrono::high_resolution_clock::time_point hr_origin_time_;
 };
 
 }  // namespace dntp

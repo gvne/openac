@@ -72,7 +72,7 @@ public:
               content_.data() + pop_index_ + pop_size,
               data);
     // reset values to zero when read
-    memset(content_.data() + pop_index_, 0, pop_size);
+    memset(content_.data() + pop_index_, 0, pop_size * sizeof(T));
     set_pop_index(pop_index_ + pop_size);
     if (pop_size == data_size) {
       return;

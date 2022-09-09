@@ -9,7 +9,9 @@ Emitter::Emitter(int device_index) :
   dntp_server_(context_),
   emit_called_(false) {}
 
-void Emitter::Run(const std::vector<std::string>& addrs, std::error_code &err) {
+void Emitter::Run(const std::vector<std::string>& addrs,
+                  bool use_high_latency,
+                  std::error_code &err) {
   dntp_server_.Start(err);
   if (err) {
     return;
@@ -22,7 +24,9 @@ void Emitter::Run(const std::vector<std::string>& addrs, std::error_code &err) {
   spdlog::debug("Using device: {}", device.name());
 
   // Initialize the stream
-  pa::Stream stream(device);
+  pa::Stream stream(device,
+                    use_high_latency ? device.default_high_input_latency() : device.default_low_input_latency(),
+                    use_high_latency ? device.default_high_output_latency() : device.default_low_output_latency());
   stream.set_output_channel_count(0);  // We don't care about the inputs
   stream.set_input_channel_count(2);  // TODO: enable stereo with an option
   stream.Open(kSampleRate, err);
@@ -82,7 +86,7 @@ pa::Device Emitter::GetDevice(std::error_code& err) const {
 }
 
 void Emitter::Emit(const int16_t* data, std::size_t frame_count) {
-//  spdlog::info("{}", frame_count);
+  spdlog::trace("Emit {} frames", frame_count);
   
   // Keep the stream origin in memory
   if (!emit_called_) {

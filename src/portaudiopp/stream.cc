@@ -17,14 +17,14 @@ int DefaultStreamCallback(const void *input, void *output, unsigned long frameCo
                         frameCount);
 }
 
-Stream::Stream(const Device& device) :
+Stream::Stream(const Device& device, double input_latency, double output_latency) :
   device_index_(device.index()),
   input_channel_count_(device.max_input_channels()),
   output_channel_count_(device.max_output_channels()),
   stream_(nullptr),
   data_received_(false),
-  input_latency_(device.default_low_input_latency()),
-  output_latency_(device.default_low_output_latency())
+  input_latency_(input_latency),
+  output_latency_(output_latency)
   {}
 
 Stream::~Stream() {
@@ -62,8 +62,9 @@ void Stream::Open(double desired_sample_rate, std::error_code &err) {
     input_stream_parameters->channelCount = input_channel_count();
     input_stream_parameters->device = device_index_;
     input_stream_parameters->sampleFormat = paInt16;
-    input_stream_parameters->suggestedLatency = 0;
+    input_stream_parameters->suggestedLatency = input_latency_;
     input_stream_parameters->hostApiSpecificStreamInfo = nullptr;
+    spdlog::debug("Using input latency {}s", input_latency_);
   }
   std::shared_ptr<PaStreamParameters> output_stream_parameters;
   if (output_channel_count() != 0) {
@@ -71,8 +72,9 @@ void Stream::Open(double desired_sample_rate, std::error_code &err) {
     output_stream_parameters->channelCount = output_channel_count();
     output_stream_parameters->device = device_index_;
     output_stream_parameters->sampleFormat = paInt16;
-    output_stream_parameters->suggestedLatency = 0;
+    output_stream_parameters->suggestedLatency = output_latency_;
     output_stream_parameters->hostApiSpecificStreamInfo = nullptr;
+    spdlog::debug("Using output latency {}s", output_latency_);
   }
 
   auto errc = Pa_OpenStream(

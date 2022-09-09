@@ -17,7 +17,7 @@ class Stream {
     int16_t* output, double output_time,
     std::size_t frame_count)>;
 
-  Stream(const Device& device);
+  Stream(const Device& device, double input_latency, double output_latency);
   ~Stream();
 
   int input_channel_count() const;

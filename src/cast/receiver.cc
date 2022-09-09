@@ -6,14 +6,16 @@ Receiver::Receiver(int device_index) :
   device_index_(device_index),
   channel_data_(kDefaultFrameCount) {}
 
-void Receiver::Run(std::error_code &err) {
+void Receiver::Run(bool use_high_latency, std::error_code &err) {
   auto device = GetDevice(err);
   if (err) {
     return;
   }
   spdlog::debug("Using device: {}", device.name());
   
-  pa::Stream stream(device);
+  pa::Stream stream(device,
+                    use_high_latency ? device.default_high_input_latency() : device.default_low_input_latency(),
+                    use_high_latency ? device.default_high_output_latency() : device.default_low_output_latency());
   stream.set_input_channel_count(0);  // We don't care about the inputs
   stream.set_output_channel_count(2);
   stream.Open(kSampleRate, err);

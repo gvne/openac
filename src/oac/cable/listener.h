@@ -49,6 +49,8 @@ class Listener {
   /// \param index the channel index
   /// \return the listener port for the specified channel index
   uint16_t channel_port(uint8_t index) const;
+  
+  void Synchronize();
 
  private:
   void DntpConnect(const asio::ip::udp::endpoint& dntp_server_address);

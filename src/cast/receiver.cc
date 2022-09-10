@@ -4,7 +4,9 @@
 
 Receiver::Receiver(int device_index) :
   device_index_(device_index),
-  channel_data_(kDefaultFrameCount) {}
+  channel_data_(kDefaultFrameCount),
+  receive_called_(false),
+  is_stream_delayed_(false) {}
 
 void Receiver::Run(bool use_high_latency, std::error_code &err) {
   auto device = GetDevice(err);
@@ -72,6 +74,42 @@ pa::Device Receiver::GetDevice(std::error_code& err) const {
 }
 
 void Receiver::Receive(int16_t* data, std::size_t frame_count) {
+  spdlog::trace("Receive {} frames", frame_count);
+  
+  // Keep the stream origin in memory
+  if (!receive_called_) {
+    sub_->Synchronize();
+    stream_origin_ = std::chrono::high_resolution_clock::now();
+    samples_since_origin_ = 0;
+    receive_called_ = true;
+    is_stream_delayed_ = false;
+  }
+
+  // When callback is called, determine if the stream got delay for unknown reason
+  auto stream_time_s = static_cast<double>(samples_since_origin_) / kSampleRate;
+  auto expected_stream_origin = std::chrono::high_resolution_clock::now() - std::chrono::nanoseconds(static_cast<uint64_t>(stream_time_s * 1e9));
+  auto delta = expected_stream_origin - stream_origin_;
+
+  // If the stream has a delay over 50ms for more than 1second, reset it
+  if (delta > std::chrono::milliseconds(50)) {
+    if (!is_stream_delayed_) {
+      is_stream_delayed_ = true;
+      first_delay_tp_ = std::chrono::high_resolution_clock::now();
+    } else {
+      auto delay_duration = std::chrono::high_resolution_clock::now() - first_delay_tp_;
+      if (delay_duration >= std::chrono::seconds(1)) {
+        spdlog::warn("Receiver stream got delayed for {}ms. Resetting", std::chrono::duration_cast<std::chrono::milliseconds>(delay_duration).count());
+        receive_called_ = false;
+        return;
+      }
+    }
+  } else {
+    is_stream_delayed_ = false;
+  }
+
+  samples_since_origin_ += frame_count;
+  
+  
   if (frame_count > channel_data_.size()) {
     // TODO: this is a problem. Allocating memory at runtime may fail
     spdlog::debug("Resizing buffers");

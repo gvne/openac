@@ -102,6 +102,12 @@ void Listener::Synchronize(
   Synchronize(dntp_server_address);
 }
 
+void Listener::Synchronize() {
+  for (auto& offset : time_offsets_) {
+    Synchronize(offset.first);
+  }
+}
+
 void Listener::Synchronize(const asio::ip::udp::endpoint &dntp_server_address) {
   auto now_hr = std::chrono::high_resolution_clock::now();
   auto delta = now_hr - hr_origin_;

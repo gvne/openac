@@ -30,6 +30,12 @@ class Receiver {
   std::vector<int16_t> channel_data_;
 
   std::shared_ptr<oac::cable::Listener> sub_;
+  
+  bool receive_called_;
+  bool is_stream_delayed_;
+  std::chrono::high_resolution_clock::time_point stream_origin_;
+  std::chrono::high_resolution_clock::time_point first_delay_tp_;
+  uint64_t samples_since_origin_;
 };
 
 #endif  // CAST_RECEIVER_H_

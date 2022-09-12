@@ -1,5 +1,8 @@
 #include "portaudiopp/error.h"
 
+#include <string>
+#include <algorithm>
+
 #include "portaudio.h"
 
 namespace pa {

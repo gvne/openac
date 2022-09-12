@@ -14,14 +14,14 @@ const char* ErrorCategory::name() const noexcept {
 }
 
 std::string ErrorCategory::message(int ev) const {
-  return Pa_GetErrorText(ev);
+  return std::string(Pa_GetErrorText(ev));
 }
 
 const ErrorCategory theErrorCategory {};
 
 
 std::error_code make_error_code(int ev) {
-  return {std::min(ev, 0), theErrorCategory};
+  return {std::min(ev, int(0)), theErrorCategory};
 }
 
 }  // namespace pa

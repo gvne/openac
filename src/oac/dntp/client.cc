@@ -1,6 +1,7 @@
 #include "oac/dntp/client.h"
 #include <spdlog/spdlog.h>
 #include "oac/dntp/timestamp.h"
+#include "oac/chrono/local_clock.h"
 
 namespace oac {
 namespace dntp {
@@ -75,11 +76,7 @@ void Client::SendRequest() {
 }
 
 Timestamp Client::Now() const {
-  // Use the high resolution clock delta to determine the time instead of the less precise system clock
-  auto now_hr = std::chrono::high_resolution_clock::now();
-  auto delta = now_hr - hr_origin_time_;
-  auto now_system = origin_time_ + std::chrono::duration_cast<std::chrono::system_clock::duration>(delta);
-  return timestamp::FromTimePoint(now_system);
+  return timestamp::FromTimePoint(chrono::LocalClock::now());
 }
 
 void Client::set_period(std::chrono::milliseconds period) {

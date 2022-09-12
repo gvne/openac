@@ -13,6 +13,7 @@ set(dntp_sources
 add_library(oac_dntp ${dntp_sources})
 target_link_libraries(oac_dntp
   oac::memory
+  oac::chrono
 
   asio
   spdlog

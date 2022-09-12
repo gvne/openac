@@ -4,9 +4,10 @@
 #include <system_error>
 
 #include "portaudiopp/portaudiopp.h"
-#include "resample/interpolator.h"
 
+#include "oac/memory/sliding_window.h"
 #include "oac/dntp/server.h"
+#include "oac/chrono/stream_clock.h"
 #include "oac/cable/publisher.h"
 
 class Emitter {
@@ -35,11 +36,8 @@ class Emitter {
   std::shared_ptr<oac::cable::Publisher> pub_;
   
   bool emit_called_;
-  std::chrono::high_resolution_clock::time_point stream_origin_;
-  uint32_t samples_since_origin_;
-  
-  bool is_stream_delayed_;
-  std::chrono::high_resolution_clock::time_point first_delay_tp_;
+  oac::chrono::StreamClock stream_clock_;
+  oac::mem::SlidingWindow clock_delays_;
 };
 
 #endif  // CAST_EMITTER_H_

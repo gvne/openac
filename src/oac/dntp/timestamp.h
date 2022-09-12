@@ -6,6 +6,8 @@
 
 #include "astruct/astruct.h"
 
+#include "oac/chrono/local_clock.h"
+
 namespace oac {
 namespace dntp {
 
@@ -41,7 +43,7 @@ Timestamp FromTimePoint(std::chrono::time_point<Clock> tp) {
 
 /// Get the current timestamp for a specific clock
 /// \tparam Clock the std::chrono clock to obtain the current time from
-template <class ReferenceClock = std::chrono::system_clock>
+template <class ReferenceClock = oac::chrono::LocalClock>
 Timestamp Now() {
   return FromTimePoint(ReferenceClock::now());
 }

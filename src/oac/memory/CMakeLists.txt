@@ -1,7 +1,11 @@
 set(memory_sources
   endian.h
   endian.cc
+  
   circular_buffer.h
+
+  sliding_window.h
+  sliding_window.cc
 )
 add_library(oac_memory ${memory_sources})
 

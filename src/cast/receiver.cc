@@ -15,9 +15,8 @@ void Receiver::Run(bool use_high_latency, std::error_code &err) {
   }
   spdlog::debug("Using device: {}", device.name());
   
-  pa::Stream stream(device,
-                    use_high_latency ? device.default_high_input_latency() : device.default_low_input_latency(),
-                    use_high_latency ? device.default_high_output_latency() : device.default_low_output_latency());
+  auto device_latency = use_high_latency ? device.default_high_output_latency() : device.default_low_output_latency();
+  pa::Stream stream(device, 0, device_latency);
   stream.set_input_channel_count(0);  // We don't care about the inputs
   stream.set_output_channel_count(2);
   stream.Open(kSampleRate, err);
@@ -30,6 +29,9 @@ void Receiver::Run(bool use_high_latency, std::error_code &err) {
   
   // Initialize the publisher
   sub_ = std::make_shared<oac::cable::Listener>(context_, stream.output_channel_count());
+  
+  auto device_latency_ms = device_latency * 1000;
+  sub_->set_latency(std::chrono::milliseconds(250) - std::chrono::milliseconds(static_cast<uint64_t>(device_latency_ms)));
   std::vector<uint16_t> channel_ports;
   for (auto channel_index = 0; channel_index < stream.output_channel_count(); channel_index++) {
     channel_ports.push_back(kDefaultPort + channel_index);

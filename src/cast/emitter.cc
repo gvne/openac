@@ -22,11 +22,11 @@ void Emitter::Run(const std::vector<std::string>& addrs,
     return;
   }
   spdlog::debug("Using device: {}", device.name());
+  
+  auto device_latency = use_high_latency ? device.default_high_input_latency() : device.default_low_input_latency();
 
   // Initialize the stream
-  pa::Stream stream(device,
-                    use_high_latency ? device.default_high_input_latency() : device.default_low_input_latency(),
-                    use_high_latency ? device.default_high_output_latency() : device.default_low_output_latency());
+  pa::Stream stream(device, device_latency, 0);
   stream.set_output_channel_count(0);  // We don't care about the inputs
   stream.set_input_channel_count(2);  // TODO: enable stereo with an option
   stream.Open(kSampleRate, err);

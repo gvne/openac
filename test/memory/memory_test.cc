@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "oac/memory/circular_buffer.h"
+#include "oac/memory/sliding_window.h"
 
 TEST(Memory, CircularBuffer_Syntax) {
   const auto message_size = 882;
@@ -45,4 +46,19 @@ TEST(Memory, CircularBuffer_Bounds) {
   for (std::size_t index = 8; index < 8 + 12; index++) {
     ASSERT_EQ(content[index], 9);
   }
+}
+
+TEST(Memory, SlidingWindow) {
+  oac::mem::SlidingWindow window(3);
+  window.Push(1);
+  window.Push(2);
+  window.Push(3);
+  
+  ASSERT_EQ(window.mean(), 2);
+  auto std = window.standard_deviation();
+  ASSERT_FLOAT_EQ(std, 0.81649661);
+  
+  window.Push(2);
+  ASSERT_EQ(window.mean(), (2.0 + 3.0 + 2.0) / 3);
+  ASSERT_LT(window.standard_deviation(), std);  // the set varies less
 }

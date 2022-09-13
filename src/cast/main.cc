@@ -31,10 +31,13 @@ void Emit(int device_index, const std::vector<std::string>& addrs, bool use_high
   }
 }
 
-void Receive(int device_index, bool use_high_latency, int extra_latency_ms) {
+void Receive(int device_index,
+             bool use_high_latency,
+             int latency_ms,
+             int extra_latency_ms) {
   std::error_code err;
   Receiver receiver(device_index);
-  receiver.Run(use_high_latency, extra_latency_ms, err);
+  receiver.Run(use_high_latency, latency_ms, extra_latency_ms, err);
   if (err) {
     spdlog::error("Failed to receive: {}", err.message());
     return;
@@ -53,6 +56,7 @@ int main(int argc, char* argv[]) {
       ("e,emit", "Emit", cxxopts::value<bool>()->default_value("false"))
       ("highlatency", "Use the default high latency of the selected device", cxxopts::value<bool>()->default_value("false"))
       ("r,receive", "Receive", cxxopts::value<bool>()->default_value("false"))
+      ("latency", "Time in millisecond before playing a received sample", cxxopts::value<int>()->default_value("250"))
       ("extralatency", "Extra output device latency in millisecond. Useful when playing on a bluetooth device or any that add an extra latency", cxxopts::value<int>()->default_value("0"))
       ("addr", "Addresses", cxxopts::value<std::vector<std::string>>()->default_value("127.0.0.1"));
 
@@ -81,7 +85,9 @@ int main(int argc, char* argv[]) {
   }
 
   if (result["receive"].as<bool>()) {
-    Receive(result["device"].as<int>(), result["highlatency"].as<bool>(),
+    Receive(result["device"].as<int>(),
+            result["highlatency"].as<bool>(),
+            result["latency"].as<int>(),
             result["extralatency"].as<int>());
   }
 

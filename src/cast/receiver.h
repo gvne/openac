@@ -13,7 +13,10 @@
 class Receiver {
  public:
   Receiver(int device_index);
-  void Run(bool use_high_latency, int extra_latency_ms, std::error_code& err);
+  void Run(bool use_high_latency,
+           int latency_ms,
+           int extra_latency_ms,
+           std::error_code& err);
   
   static const uint16_t kDefaultPort = 50000;
 

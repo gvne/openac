@@ -11,6 +11,7 @@ Receiver::Receiver(int device_index) :
   {}
 
 void Receiver::Run(bool use_high_latency,
+                   int latency_ms,
                    int extra_latency_ms,
                    std::error_code &err) {
   auto device = GetDevice(err);
@@ -35,7 +36,7 @@ void Receiver::Run(bool use_high_latency,
   sub_ = std::make_shared<oac::cable::Listener>(context_, stream.output_channel_count());
   
   auto device_latency_ms = device_latency * 1000 + extra_latency_ms;
-  sub_->set_latency(std::chrono::milliseconds(250) - std::chrono::milliseconds(static_cast<uint64_t>(device_latency_ms)));
+  sub_->set_latency(std::chrono::milliseconds(latency_ms) - std::chrono::milliseconds(static_cast<uint64_t>(device_latency_ms)));
   std::vector<uint16_t> channel_ports;
   for (auto channel_index = 0; channel_index < stream.output_channel_count(); channel_index++) {
     channel_ports.push_back(kDefaultPort + channel_index);

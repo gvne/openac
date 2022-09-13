@@ -9,7 +9,6 @@ set(cast_sources
 add_executable(cast ${cast_sources})
 target_link_libraries(cast
   oac::cable
-  resample
   portaudiopp
 
   asio

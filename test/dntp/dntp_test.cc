@@ -31,7 +31,7 @@ class UnsynchronizedServer : public oac::dntp::Server {
 TEST(DNTP, Basic) {
   const int32_t expected_sync_offset_ms = 123;
   
-//  spdlog::set_level(spdlog::level::trace);
+  spdlog::set_level(spdlog::level::debug);
   asio::io_context context;
   std::error_code err;
   

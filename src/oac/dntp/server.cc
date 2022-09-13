@@ -16,9 +16,6 @@ void Server::Start(std::error_code& err) {
 }
 
 void Server::Start(uint16_t port, std::error_code& err) {
-  origin_time_ = std::chrono::system_clock::now();
-  hr_origin_time_ = std::chrono::high_resolution_clock::now();
-  
   socket_.open(asio::ip::udp::v4(), err);
   if (err) {
     return;

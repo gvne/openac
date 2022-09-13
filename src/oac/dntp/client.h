@@ -3,6 +3,8 @@
 
 #include <asio.hpp>
 
+#include "oac/memory/sliding_window.h"
+
 #include "oac/dntp/message.h"
 #include "oac/dntp/timestamp.h"
 
@@ -40,9 +42,11 @@ class Client {
  private:
   void ListenResponse();
   void SendRequest();
+  
+  static double ToSeconds(const Nanoseconds& value);
+  static Nanoseconds FromSeconds(double value);
 
  private:
-  std::chrono::milliseconds period_;
   UpdateCallback callback_;
 
   asio::io_context& context_;
@@ -53,8 +57,10 @@ class Client {
   Message sent_message_;
   Message received_message_;
   
-  std::chrono::system_clock::time_point origin_time_;
-  std::chrono::high_resolution_clock::time_point hr_origin_time_;
+  std::chrono::milliseconds period_;
+  mem::SlidingWindow time_offsets_;
+  mem::SlidingWindow round_trip_delays_;
+  double last_update_time_offset_;
 };
 
 }  // namespace dntp

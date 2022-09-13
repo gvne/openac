@@ -43,9 +43,6 @@ class Server : public ServerInterface {
 
   Message message_;
   asio::ip::udp::endpoint origin_;
-  
-  std::chrono::system_clock::time_point origin_time_;
-  std::chrono::high_resolution_clock::time_point hr_origin_time_;
 };
 
 }  // namespace dntp

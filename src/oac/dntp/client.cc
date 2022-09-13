@@ -6,19 +6,22 @@
 namespace oac {
 namespace dntp {
 
+const std::chrono::milliseconds kMinPeriod(250);
+const std::chrono::milliseconds kMaxPeriod(3000);
+
 Client::Client(asio::io_context& context) :
-  period_(3000),  // default period is 3 seconds
   callback_([](Nanoseconds, Nanoseconds){}),
   context_(context),
   socket_(context),
-  timer_(context, std::chrono::seconds(0)) {}
+  timer_(context, std::chrono::seconds(0)),
+  period_(kMinPeriod),
+  time_offsets_(100),
+  round_trip_delays_(100),
+  last_update_time_offset_(0) {}
 
 void Client::Start(asio::ip::udp::endpoint server_addr,
                    UpdateCallback callback,
                    std::error_code &err) {
-  origin_time_ = std::chrono::system_clock::now();
-  hr_origin_time_ = std::chrono::high_resolution_clock::now();
-  
   callback_ = callback;
   socket_.open(asio::ip::udp::v4(), err);
   if (err) {
@@ -52,9 +55,36 @@ void Client::ListenResponse() {
 
       auto round_trip_delay = message::RoundTripDelay(received_message_, final_time);
       auto time_offset = message::TimeOffset(received_message_,final_time);
-      asio::post(context_, [this, round_trip_delay, time_offset](){
-        callback_(time_offset, round_trip_delay);
-      });
+    
+      auto time_offset_s = ToSeconds(time_offset);
+      auto round_trip_delay_s = ToSeconds(round_trip_delay);
+      
+      auto offset_mean = time_offsets_.mean();
+      auto offset_std = time_offsets_.standard_deviation();
+    
+      auto offset_err = std::abs(time_offset_s - offset_mean);
+      if (offset_err < offset_std * 5) {
+        // if the offset is in the standard deviation range we can reduce the frequency at which we query the server
+        period_ = std::min(period_ * 2, kMaxPeriod);
+      } else {
+        // else, we reset the polling period to increase the number of received values
+        spdlog::debug("dntp - Resetting frequency (err={:.4f}s, std={:.4f}s)", offset_err, offset_std);
+        period_ = kMinPeriod;
+      }
+    
+      time_offsets_.Push(time_offset_s);
+      round_trip_delays_.Push(round_trip_delay_s);
+      
+      offset_mean = time_offsets_.mean();
+      offset_err = std::abs(last_update_time_offset_ - offset_mean);
+      if (offset_err > offset_std) {
+        last_update_time_offset_ = offset_mean;
+        auto rtd = round_trip_delays_.mean();
+        asio::post(context_, [this, offset_mean, rtd](){
+          callback_(FromSeconds(offset_mean), FromSeconds(rtd));
+        });
+      }
+      
       ListenResponse();
     }
   );
@@ -85,6 +115,14 @@ void Client::set_period(std::chrono::milliseconds period) {
 
 std::chrono::milliseconds Client::period() const {
   return period_;
+}
+
+double Client::ToSeconds(const Nanoseconds& value) {
+  return static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(value).count()) / 1e9;
+}
+
+Client::Nanoseconds Client::FromSeconds(double value) {
+  return std::chrono::nanoseconds(static_cast<uint64_t>(value * 1e9));
 }
 
 }  // namespace dntp

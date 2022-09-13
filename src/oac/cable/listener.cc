@@ -93,11 +93,6 @@ void Listener::Synchronize(
   auto delta = time_offset - time_offsets_[dntp_server_address];
   auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
   
-  // Synchronize only if the time offset changed by at least 25ms
-  if (std::abs(delta_ms.count()) < 25) {
-    return;
-  }
-  
   time_offsets_[dntp_server_address] = time_offset;
   Synchronize(dntp_server_address);
 }

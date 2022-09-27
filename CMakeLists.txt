@@ -15,6 +15,7 @@ option(openac_enable_tests "Enable tests" ${openac_is_toplevel_project})
 option(openac_enable_juce_tests "Enable JUCE tests" ${openac_is_toplevel_project})
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_asio.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_comms.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_spdlog.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_structutils.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/add_portaudio.cmake)

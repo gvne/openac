@@ -1,3 +1,4 @@
+add_subdirectory(network)
 add_subdirectory(oac)
 add_subdirectory(portaudiopp)
 # add_subdirectory(resample)

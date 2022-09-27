@@ -1,6 +1,5 @@
 #include "oac/dntp/client.h"
 #include <spdlog/spdlog.h>
-#include "oac/dntp/timestamp.h"
 #include "oac/chrono/local_clock.h"
 
 namespace oac {
@@ -40,6 +39,8 @@ Client::Client(asio::io_context& context) :
   context_(context),
   socket_(context),
   timer_(context, std::chrono::seconds(0)),
+  request_datagram_(request_.length()),
+  response_datagram_(response_.length()),
   period_(kPeriodMin),
   time_offsets_(kSlidingWindowSize),
   round_trip_delays_(kSlidingWindowSize),
@@ -69,18 +70,25 @@ void Client::Start(asio::ip::udp::endpoint server_addr,
 
 void Client::ListenResponse() {
   socket_.async_receive(
-    asio::buffer(received_message_.data(), received_message_.size()),
+    asio::buffer(response_datagram_),
     [&](const asio::error_code& cerr, std::size_t size) {
       spdlog::trace("dntp - Received response");
-      auto final_time = timestamp::Pack(Now());
+      auto final_time = Now();
       if (cerr) {
         spdlog::warn("dntp - Could not receive server response: {}", cerr.message());
         ListenResponse();
         return;
       }
+    
+      auto response_datagram_iterator = response_datagram_.begin();
+      if (response_.read(response_datagram_iterator, size) != comms::ErrorStatus::Success) {
+        spdlog::debug("dntp - Could not decode response");
+        ListenResponse();
+        return;
+      };
 
-      auto round_trip_delay = message::RoundTripDelay(received_message_, final_time);
-      auto time_offset = message::TimeOffset(received_message_,final_time);
+      auto round_trip_delay = RoundTripDelay(response_, final_time);
+      auto time_offset = TimeOffset(response_,final_time);
 
       auto time_offset_s = ToSeconds(time_offset);
       auto round_trip_delay_s = ToSeconds(round_trip_delay);
@@ -120,10 +128,16 @@ void Client::SendRequest() {
   timer_.async_wait([&](const asio::error_code& cerr){
     timer_.expires_at(timer_.expiry() + period_);
     spdlog::trace("dntp - Sending request");
-    sent_message_.version = message::kVersion;
-    sent_message_.originate_timestamp = timestamp::Pack(Now());
+    request_.field_originate_timestamp().value() = Now().value();
+    auto request_iterator = request_datagram_.begin();
+    if (request_.write(request_iterator, request_datagram_.size()) != comms::ErrorStatus::Success) {
+      spdlog::debug("dntp - Could Serialize request");
+      SendRequest();
+      return;
+    }
+    
     std::error_code err;
-    socket_.send_to(asio::buffer(sent_message_.data(), sent_message_.size()), server_addr_, 0, err);
+    socket_.send_to(asio::buffer(request_datagram_), server_addr_, 0, err);
     if (err) {
       spdlog::debug("dntp - Couldn't send request: {}", err.message());
     }
@@ -132,7 +146,7 @@ void Client::SendRequest() {
 }
 
 Timestamp Client::Now() const {
-  return timestamp::FromTimePoint(chrono::LocalClock::now());
+  return FromTimePoint(chrono::LocalClock::now());
 }
 
 void Client::set_period(std::chrono::milliseconds period) {

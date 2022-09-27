@@ -6,7 +6,7 @@
 
 #include <asio.hpp>
 
-#include "oac/dntp/message.h"
+#include "oac/dntp/utils.h"
 #include "oac/dntp/server_interface.h"
 
 namespace oac {
@@ -40,8 +40,10 @@ class Server : public ServerInterface {
  private:
   asio::io_context& context_;
   asio::ip::udp::socket socket_;
-
-  Message message_;
+  
+  Message request_;
+  std::vector<uint8_t> request_datagram_;
+  std::vector<uint8_t> response_datagram_;
   asio::ip::udp::endpoint origin_;
 };
 

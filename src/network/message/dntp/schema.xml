@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema name="dntp_msg" endian="big">
+  <fields>
+    <bundle name="Timestamp">
+      <int name="second" type="int32"/>
+      <int name="fraction" type="uint32"/>
+    </bundle>
+
+    <bundle name="Message">
+      <int name="version" type="uint8" defaultValue="1"/>
+      <ref name="originate_timestamp" field="Timestamp">
+        <description>the client's timestamp of the request packet transmission</description>
+      </ref>
+      <ref name="receive_timestamp" field="Timestamp">
+        <description>the server's timestamp of the request packet reception</description>
+      </ref>
+      <ref name="transmit_timestamp" field="Timestamp">
+        <description>the server's timestamp of the response packet transmission</description>
+      </ref>
+    </bundle>
+  </fields>
+
+  <!-- Note: declaring interfaces is required to access the fields within the code -->
+  <interface name="MessageInterface">
+    <ref field="Message"/>
+  </interface>
+
+  <!-- Note: declaring a <frame> is mendatory -->
+  <frame name="Frame">
+    <layers>
+      <payload name="data"/>
+    </layers>
+  </frame>
+</schema>

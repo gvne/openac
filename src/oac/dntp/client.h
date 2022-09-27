@@ -5,8 +5,7 @@
 
 #include "oac/memory/sliding_window.h"
 
-#include "oac/dntp/message.h"
-#include "oac/dntp/timestamp.h"
+#include "oac/dntp/utils.h"
 
 namespace oac {
 namespace dntp {
@@ -54,8 +53,10 @@ class Client {
   asio::steady_timer timer_;
   asio::ip::udp::endpoint server_addr_;
 
-  Message sent_message_;
-  Message received_message_;
+  Message request_;
+  std::vector<uint8_t> request_datagram_;
+  Message response_;
+  std::vector<uint8_t> response_datagram_;
   
   std::chrono::milliseconds period_;
   mem::SlidingWindow time_offsets_;

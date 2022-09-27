@@ -5,9 +5,9 @@
 
 #include <spdlog/spdlog.h>
 
+#include "oac/dntp/utils.h"
 #include "oac/dntp/server.h"
 #include "oac/dntp/client.h"
-
 
 // Mock class to simulate a difference between client and server clock
 template <int32_t DeltaMilliseconds>
@@ -24,7 +24,7 @@ class UnsynchronizedServer : public oac::dntp::Server {
   using oac::dntp::Server::Server;
  protected:
   oac::dntp::Timestamp Now() const override {
-    return oac::dntp::timestamp::Now<UnsynchronizedClock<DeltaMilliseconds>>();
+    return oac::dntp::Now<UnsynchronizedClock<DeltaMilliseconds>>();
   }
 };
 
@@ -68,5 +68,6 @@ TEST(DNTP, Basic) {
 }
 
 TEST(DNTP, MessageSize) {
-  ASSERT_EQ(oac::dntp::Message::Size::value, 25);
+  oac::dntp::Message msg;
+  ASSERT_EQ(msg.length(), 25);
 }

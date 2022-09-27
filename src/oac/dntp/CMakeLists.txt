@@ -1,8 +1,6 @@
 set(dntp_sources
-  message.h
-  message.cc
-  timestamp.h
-  timestamp.cc
+  utils.h
+  utils.cc
 
   server_interface.h
   server.h
@@ -16,8 +14,9 @@ target_link_libraries(oac_dntp
   oac::chrono
 
   asio
+  dntp_msg
+  comms
   spdlog
-  astruct
 )
 target_include_directories(oac_dntp PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>

@@ -1,3 +1,4 @@
+add_subdirectory(message)
 add_subdirectory(memory)
 add_subdirectory(chrono)
 add_subdirectory(dntp)

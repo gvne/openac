@@ -72,6 +72,7 @@ void Client::ListenResponse() {
   socket_.async_receive(
     asio::buffer(response_datagram_),
     [&](const asio::error_code& cerr, std::size_t size) {
+      std::error_code err;
       spdlog::trace("dntp - Received response");
       auto final_time = Now();
       if (cerr) {
@@ -79,9 +80,9 @@ void Client::ListenResponse() {
         ListenResponse();
         return;
       }
-    
-      auto response_datagram_iterator = response_datagram_.begin();
-      if (response_.read(response_datagram_iterator, size) != comms::ErrorStatus::Success) {
+      
+      Parse(response_datagram_.data(), size, response_, err);
+      if (err) {
         spdlog::debug("dntp - Could not decode response");
         ListenResponse();
         return;
@@ -126,17 +127,18 @@ void Client::ListenResponse() {
 
 void Client::SendRequest() {
   timer_.async_wait([&](const asio::error_code& cerr){
+    std::error_code err;
     timer_.expires_at(timer_.expiry() + period_);
     spdlog::trace("dntp - Sending request");
     request_.field_originate_timestamp().value() = Now().value();
-    auto request_iterator = request_datagram_.begin();
-    if (request_.write(request_iterator, request_datagram_.size()) != comms::ErrorStatus::Success) {
+    
+    Serialize(request_, request_datagram_.data(), request_datagram_.size(), err);
+    if (err) {
       spdlog::debug("dntp - Could Serialize request");
       SendRequest();
       return;
     }
     
-    std::error_code err;
     socket_.send_to(asio::buffer(request_datagram_), server_addr_, 0, err);
     if (err) {
       spdlog::debug("dntp - Couldn't send request: {}", err.message());

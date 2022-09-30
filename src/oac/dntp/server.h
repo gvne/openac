@@ -6,7 +6,7 @@
 
 #include <asio.hpp>
 
-#include "oac/dntp/utils.h"
+#include "oac/dntp/message.h"
 #include "oac/dntp/server_interface.h"
 
 namespace oac {

@@ -39,17 +39,19 @@ void Server::Run() {
   socket_.async_receive_from(
     asio::buffer(request_datagram_), origin_,
     [&](const asio::error_code& cerr, std::size_t size) {
+      std::error_code err;
       spdlog::trace("dntp - Received a request");
+    
       auto receive_timestamp = Now();
       if (cerr) {
         spdlog::debug("dntp - Invalid message received {}", cerr.message());
         Run();
         return;
       }
-      
+    
       // Decode the message from the datagram
-      auto request_datagram_iterator = request_datagram_.begin();
-      if (request_.read(request_datagram_iterator, size) != comms::ErrorStatus::Success) {
+      Parse(request_datagram_.data(), size, request_, err);
+      if (err) {
         spdlog::debug("dntp - Could not decode received message");
         Run();
         return;
@@ -66,19 +68,18 @@ void Server::Run() {
       response.field_receive_timestamp().value() = receive_timestamp.value();
       auto origin = origin_;
       asio::post(context_, [&, response, origin]() mutable {
+        std::error_code err;
         spdlog::trace("dntp - Sending response");
         response.field_transmit_timestamp().value() = Now().value();
         
         // set response data in a datagram
-        auto response_iterator = response_datagram_.begin();
-        if (response.write(response_iterator, response_datagram_.size()) != comms::ErrorStatus::Success) {
+        Serialize(response, response_datagram_.data(), response_datagram_.size(), err);
+        if (err) {
           spdlog::debug("dntp - Could Serialize response");
           return;
         }
         
-        std::error_code err;
-        socket_.send_to(
-          asio::buffer(response_datagram_), origin, 0, err);
+        socket_.send_to(asio::buffer(response_datagram_), origin, 0, err);
         if (err) {
           spdlog::debug("dntp - Could not reply: {}", err.message());
         }

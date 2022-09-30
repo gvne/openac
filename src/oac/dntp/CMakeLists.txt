@@ -1,7 +1,10 @@
 set(dntp_sources
-  utils.h
-  utils.cc
-
+  message.h
+  message.cc
+  #
+  # utils.h
+  # utils.cc
+  #
   server_interface.h
   server.h
   server.cc
@@ -14,7 +17,7 @@ target_link_libraries(oac_dntp
   oac::chrono
 
   asio
-  dntp_msg
+  oac_msg
   comms
   spdlog
 )

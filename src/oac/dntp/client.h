@@ -5,7 +5,7 @@
 
 #include "oac/memory/sliding_window.h"
 
-#include "oac/dntp/utils.h"
+#include "oac/dntp/message.h"
 
 namespace oac {
 namespace dntp {

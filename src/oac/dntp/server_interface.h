@@ -2,7 +2,7 @@
 #define OAC_DNTP_SERVER_INTERFACE_H_
 
 #include <asio.hpp>
-#include "oac/dntp/utils.h"
+#include "oac/dntp/message.h"
 
 namespace oac {
 namespace dntp {

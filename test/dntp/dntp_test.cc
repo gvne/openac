@@ -5,7 +5,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include "oac/dntp/utils.h"
 #include "oac/dntp/server.h"
 #include "oac/dntp/client.h"
 

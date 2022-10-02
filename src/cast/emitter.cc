@@ -1,7 +1,6 @@
 #include "cast/emitter.h"
 #include <spdlog/spdlog.h>
 #include "oac/chrono/local_clock.h"
-#include "oac/memory/endian.h"
 #include "cast/receiver.h"
 
 Emitter::Emitter(int device_index) :
@@ -128,11 +127,6 @@ void Emitter::Emit(const int16_t* data, std::size_t frame_count) {
     for (auto channel_sample_index = 0; channel_sample_index < frame_count; channel_sample_index++) {
       auto sample_index = channel_index + channel_sample_index * stream_channel_count_;
       channel_data_[channel_sample_index] = data[sample_index];
-    }
-
-    // Convert data to big endian
-    for (auto index = 0; index < frame_count; index++) {
-      channel_data_[index] = oac::mem::ToBigEndian(channel_data_[index]);
     }
 
     // Publish !

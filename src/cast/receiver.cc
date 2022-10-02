@@ -1,6 +1,5 @@
 #include "cast/receiver.h"
 #include <spdlog/spdlog.h>
-#include "oac/memory/endian.h"
 
 Receiver::Receiver(int device_index) :
   device_index_(device_index),
@@ -107,7 +106,6 @@ void Receiver::Receive(int16_t* data, std::size_t frame_count) {
   stream_clock_.AddPlayedSamples(frame_count);
   // -----
   
-  
   if (frame_count > channel_data_.size()) {
     // TODO: this is a problem. Allocating memory at runtime may fail
     spdlog::debug("Resizing buffers");
@@ -119,7 +117,7 @@ void Receiver::Receive(int16_t* data, std::size_t frame_count) {
 
     // Convert data from big endian
     for (auto sample_index = 0; sample_index < frame_count; sample_index++) {
-      data[channel_index + sample_index * stream_channel_count_] = oac::mem::FromBigEndian(channel_data_[sample_index]);
+      data[channel_index + sample_index * stream_channel_count_] = channel_data_[sample_index];
     }
   }
 }

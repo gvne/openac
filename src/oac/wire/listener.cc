@@ -1,7 +1,6 @@
 #include "oac/wire/listener.h"
 #include <spdlog/spdlog.h>
 
-#include "oac/memory/endian.h"
 #include "oac/dntp/message.h"
 
 #include "oac/wire/message.h"

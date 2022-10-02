@@ -2,7 +2,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include "oac/memory/endian.h"
 #include "oac/dntp/message.h"
 
 namespace oac {

@@ -1,7 +1,4 @@
 set(memory_sources
-  endian.h
-  endian.cc
-  
   circular_buffer.h
 
   sliding_window.h
@@ -20,13 +17,5 @@ target_include_directories(oac_memory PUBLIC
 
 source_group(TREE "${CMAKE_CURRENT_LIST_DIR}" FILES ${memory_sources})
 set_target_properties(oac_memory PROPERTIES FOLDER src/oac)
-
-include (TestBigEndian)
-TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
-if(IS_BIG_ENDIAN)
-  target_compile_definitions(oac_memory PUBLIC IS_BIG_ENDIAN)
-else()
-  target_compile_definitions(oac_memory PUBLIC IS_LITTLE_ENDIAN)
-endif()
 
 add_library(oac::memory ALIAS oac_memory)

@@ -7,8 +7,7 @@
 #pragma once
 
 #include <cstdint>
-#include "oac_msg/field/RTPExtensionCommon.h"
-#include "oac_msg/field/RTPFlagsCommon.h"
+#include "oac_msg/field/RTPHeaderCommon.h"
 
 namespace oac_msg
 {
@@ -22,104 +21,17 @@ namespace message
 struct RTPMessageFieldsCommon
 {
     /// @brief Common definitions of the member fields of
-    ///     @ref oac_msg::message::RTPMessageFields::Flags field.
-    using FlagsMembersCommon = oac_msg::field::RTPFlagsMembersCommon;
+    ///     @ref oac_msg::message::RTPMessageFields::Header field.
+    using HeaderMembersCommon = oac_msg::field::RTPHeaderMembersCommon;
 
     /// @brief Common types and functions for
-    ///     @ref oac_msg::message::RTPMessageFields::Flags field.
-    struct FlagsCommon : public oac_msg::field::RTPFlagsCommon
+    ///     @ref oac_msg::message::RTPMessageFields::Header field.
+    struct HeaderCommon : public oac_msg::field::RTPHeaderCommon
     {
-        /// @brief Name of the @ref oac_msg::message::RTPMessageFields::Flags field.
+        /// @brief Name of the @ref oac_msg::message::RTPMessageFields::Header field.
         static const char* name()
         {
-            return "flags";
-        }
-    };
-
-    /// @brief Common types and functions for
-    ///     @ref oac_msg::message::RTPMessageFields::Sequence_number field.
-    struct Sequence_numberCommon
-    {
-        /// @brief Re-definition of the value type used by
-        ///     oac_msg::message::RTPMessageFields::Sequence_number field.
-        using ValueType = std::uint16_t;
-
-        /// @brief Name of the @ref oac_msg::message::RTPMessageFields::Sequence_number field.
-        static const char* name()
-        {
-            return "sequence_number";
-        }
-
-        /// @brief Compile time detection of special values presence.
-        static constexpr bool hasSpecials()
-        {
-            return false;
-        }
-    };
-
-    /// @brief Common types and functions for
-    ///     @ref oac_msg::message::RTPMessageFields::Timestamp field.
-    struct TimestampCommon
-    {
-        /// @brief Re-definition of the value type used by
-        ///     oac_msg::message::RTPMessageFields::Timestamp field.
-        using ValueType = std::uint32_t;
-
-        /// @brief Name of the @ref oac_msg::message::RTPMessageFields::Timestamp field.
-        static const char* name()
-        {
-            return "timestamp";
-        }
-
-        /// @brief Compile time detection of special values presence.
-        static constexpr bool hasSpecials()
-        {
-            return false;
-        }
-    };
-
-    /// @brief Common types and functions for
-    ///     @ref oac_msg::message::RTPMessageFields::Ssrc field.
-    struct SsrcCommon
-    {
-        /// @brief Re-definition of the value type used by
-        ///     oac_msg::message::RTPMessageFields::Ssrc field.
-        using ValueType = std::uint32_t;
-
-        /// @brief Name of the @ref oac_msg::message::RTPMessageFields::Ssrc field.
-        static const char* name()
-        {
-            return "ssrc";
-        }
-
-        /// @brief Compile time detection of special values presence.
-        static constexpr bool hasSpecials()
-        {
-            return false;
-        }
-    };
-
-    /// @brief Scope for all the common definitions of the member fields of
-    ///     @ref oac_msg::message::RTPMessageFields::Opt_extension field.
-    struct Opt_extensionMembersCommon
-    {
-        /// @brief Common definitions of the member fields of
-        ///     @ref oac_msg::message::RTPMessageFields::Opt_extensionMembers::RTPExtension field.
-        using RTPExtensionMembersCommon = oac_msg::field::RTPExtensionMembersCommon;
-
-        /// @brief Common types and functions for
-        ///     @ref oac_msg::message::RTPMessageFields::Opt_extensionMembers::RTPExtension field.
-        using RTPExtensionCommon = oac_msg::field::RTPExtensionCommon;
-    };
-
-    /// @brief Common types and functions for
-    ///     @ref oac_msg::message::RTPMessageFields::Opt_extension field.
-    struct Opt_extensionCommon
-    {
-        /// @brief Name of the @ref oac_msg::message::RTPMessageFields::Opt_extension field.
-        static const char* name()
-        {
-            return "opt_extension";
+            return "header";
         }
     };
 
@@ -133,7 +45,7 @@ struct RTPMessageFieldsCommon
         {
             /// @brief Re-definition of the value type used by
             ///     oac_msg::message::RTPMessageFields::ContentMembers::Element field.
-            using ValueType = std::uint8_t;
+            using ValueType = std::int16_t;
 
             /// @brief Name of the @ref oac_msg::message::RTPMessageFields::ContentMembers::Element field.
             static const char* name()

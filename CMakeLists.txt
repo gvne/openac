@@ -10,7 +10,7 @@ endif()
 # Avoid showing external dependencies at top level on Xcode
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 option(openac_enable_tests "Enable tests" ${openac_is_toplevel_project})
 option(openac_enable_juce_tests "Enable JUCE tests" ${openac_is_toplevel_project})
 

@@ -65,6 +65,23 @@
         <ref name="reference_timestamp" field="Timestamp"/>
       </bundle>
     </variant>
+
+    <bundle name="RTPHeader">
+      <ref name="flags" field="RTPFlags"/>
+      <int name="sequence_number" type="uint16" defaultValue="0"/>
+      <int name="timestamp" type="uint32" defaultValue="0"/>
+      <int name="ssrc" type="uint32" defaultValue="0"/>
+      <!-- TODO: the countPrefix doesn't seem to work when referencing bitfield
+      values. We don't use the CSRC at the moment anyway. We can keep it empty -->
+      <!-- <list name="csrc" countPrefix="flags.csrc_count">
+        <element>
+          <int name="Element" type="uint32"/>
+        </element>
+      </list> -->
+      <optional name="opt_extension" cond="$flags.extension = 1">
+        <ref field="RTPExtension"/>
+      </optional>
+    </bundle>
   </fields>
 
   <message name="DNTPMessage" id="1">
@@ -75,23 +92,9 @@
   </message>
 
   <message name="RTPMessage" id="2">
-    <ref name="flags" field="RTPFlags"/>
-    <int name="sequence_number" type="uint16" defaultValue="0"/>
-    <int name="timestamp" type="uint32" defaultValue="0"/>
-    <int name="ssrc" type="uint32" defaultValue="0"/>
-    <!-- TODO: the countPrefix doesn't seem to work when referencing bitfield
-    values. We don't use the CSRC at the moment anyway. We can keep it empty -->
-    <!-- <list name="csrc" countPrefix="flags.csrc_count">
-      <element>
-        <int name="Element" type="uint32"/>
-      </element>
-    </list> -->
-    <optional name="opt_extension" cond="$flags.extension = 1">
-      <ref field="RTPExtension"/>
-    </optional>
-
+    <ref name="header" field="RTPHeader"/>
     <list name="content">
-      <int name="element" type="uint8"/>
+      <int name="element" type="int16"/>
     </list>
   </message>
 

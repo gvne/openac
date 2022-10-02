@@ -3,6 +3,7 @@
 
 #include "oac/wire/listener/output.h"
 #include "oac/memory/circular_buffer.h"
+#include "oac/dntp/message.h"
 
 namespace oac {
 namespace wire {
@@ -17,7 +18,7 @@ namespace listener {
 ///   client and server
 class Buffer : public Output {
  public:
-  Buffer(std::size_t content_size);
+  Buffer(const std::chrono::seconds& duration, double sample_rate);
 
   /// Update the pop index
   /// \param tp the current time point with added latency & time offset
@@ -30,10 +31,10 @@ class Buffer : public Output {
   void Pop(int16_t* data, std::size_t data_size) override;
 
   /// Update the push index
-  /// \param the reference timestamp as obtained from the extension header
-  /// \param the rtp_timestamp that represent the number of samples since the
+  /// \param reference the reference timestamp as obtained from the extension header
+  /// \param rtp_timestamp the rtp_timestamp that represent the number of samples since the
   ///   stream started
-  void set_push_index(uint64_t reference_timestamp, uint32_t rtp_timestamp);
+  void set_push_index(const dntp::Timestamp& reference, uint32_t rtp_timestamp);
 
   /// Push data to the buffer and move the push index by data_size
   /// \param data pointer to the first value to be pushed
@@ -44,10 +45,11 @@ class Buffer : public Output {
   void Clear();
 
  private:
-  uint64_t IndexFromTimestamp(uint64_t ts) const;
+  uint64_t IndexFromTimestamp(const dntp::Timestamp& ts) const;
 
  private:
   mem::CircularBuffer<int16_t> data_;
+  double sample_rate_;
 };
 
 }  // namespace listener

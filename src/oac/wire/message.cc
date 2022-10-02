@@ -3,49 +3,39 @@
 namespace oac {
 namespace wire {
 
-uint8_t* Message::data() {
-  return data_.data();
+Message MakeEmptyMessage(uint16_t frame_count) {
+  oac::wire::Message message;
+  // enable the extension
+  message.field_header().field_flags().field_extension().value() = 1;
+  message.field_header().field_opt_extension().setExists();
+  message.field_header().field_opt_extension().value().initField_oac_extension();
+  message.field_header().field_opt_extension().value().accessField_oac_extension().field_dntp_server_ipv4_address().value().resize(4);
+  // allocate the content size
+  message.field_content().value().resize(frame_count);
+  
+  return message;
 }
 
-const uint8_t* Message::data() const {
-  return data_.data();
+void Parse(const uint8_t* data,
+           std::size_t data_size,
+           Message& message,
+           std::error_code& err) {
+  auto status = message.doRead(data, data_size);
+  if (status == comms::ErrorStatus::Success) {
+    return;
+  }
+  err = std::make_error_code(std::errc::protocol_error);
 }
 
-std::size_t Message::size() const {
-  return data_.size();
-}
-
-Message::Header Message::header() const {
-  Header header;
-  std::copy(data_.data(), data_.data() + header.size(), header.data());
-  return header;
-}
-
-void Message::set_header(const Header& header) {
-  std::copy(header.data(), header.data() + header.size(), data_.data());
-}
-
-int16_t* Message::content() {
-  uint8_t* retval = data_.data() + Header::Size::value;
-  return reinterpret_cast<int16_t*>(retval);
-}
-
-const int16_t* Message::content() const {
-  return reinterpret_cast<const int16_t*>(data_.data() + Header::Size::value);
-}
-
-std::size_t Message::content_size() const {
-  return kSampleCount;
-}
-
-std::array<uint8_t, 4> Message::extension_ntp_server_address_ipv4() const {
-  auto h = header();
-  std::array<uint8_t, 4> retval;
-  retval[0] = h.extension_ntp_server_address_ipv4_part0;
-  retval[1] = h.extension_ntp_server_address_ipv4_part1;
-  retval[2] = h.extension_ntp_server_address_ipv4_part2;
-  retval[3] = h.extension_ntp_server_address_ipv4_part3;
-  return retval;
+void Serialize(const Message& message,
+               uint8_t* data,
+               std::size_t data_size,
+               std::error_code& err) {
+  auto status = message.doWrite(data, data_size);
+  if (status == comms::ErrorStatus::Success) {
+    return;
+  }
+  err = std::make_error_code(std::errc::protocol_error);
 }
 
 }  // namespace wire

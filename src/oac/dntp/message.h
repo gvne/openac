@@ -32,6 +32,8 @@ void Serialize(const Message& message,
 using Timestamp = oac_msg::field::Timestamp<>;
 using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
+bool IsEqual(const Timestamp& ts, const Timestamp& other);
+
 /// Get the timestamp for a specific time point
 /// \tparam Clock the std::chrono clock the time_point refers to
 /// \param tp the time point

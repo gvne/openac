@@ -7,7 +7,7 @@
 #include "oac/cable/listener.h"
 
 TEST(Cable, Basic) {
-  spdlog::set_level(spdlog::level::trace);
+  spdlog::set_level(spdlog::level::debug);
   const uint8_t channel_count = 1;
   asio::io_context context;
   std::error_code err;
@@ -28,11 +28,8 @@ TEST(Cable, Basic) {
   pub.channel(0).AddSubscriber(asio::ip::udp::endpoint(
     asio::ip::address::from_string("127.0.0.1"), listener.channel_port(0)));
   
-  std::atomic_bool stop(false);
-  std::thread run_thread([&stop, &context](){
-    while (!stop) {
-      context.run_for(std::chrono::seconds(1));
-    }
+  std::thread run_thread([&context](){
+    context.run();
   });
   
   // publish dummy data
@@ -41,6 +38,6 @@ TEST(Cable, Basic) {
     pub.channel(0).Publish(test_data.data(), test_data.size());
   }
   
-  stop = true;
+  context.stop();
   run_thread.join();
 }

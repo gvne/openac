@@ -2,18 +2,37 @@
 #include <spdlog/spdlog.h>
 
 #include "oac/memory/endian.h"
-#include "oac/dntp/timestamp.h"
+#include "oac/dntp/message.h"
+
+#include "oac/wire/message.h"
+#include "oac/wire/publisher.h"
 
 namespace oac {
 namespace wire {
+namespace internal {
+std::array<uint8_t, 4> ToAddr(const auto& addr) {
+  if (addr.size() != 4) {
+    return {};
+  }
+  std::array<uint8_t, 4> retval;
+  for (auto idx = 0; idx < retval.size(); idx++) {
+    retval[idx] = addr[idx].value();
+  }
+  return retval;
+}
+}  // namespace internal
 
 Listener::Listener(asio::io_context& context) :
   context_(context),
   socket_(context),
-  data_(kSamplingRate * 10),  // Keep a buffer of 10 seconds
-  reference_timestamp_(0),
+  data_(kBufferDuration, SamplingRate(Publisher::kPayloadType)),
+  reference_timestamp_{},
   on_stream_reset_([](){})
-  {}
+{
+  message_ = MakeEmptyMessage(FramePerPacket(Publisher::kPayloadType));
+  datagram_.resize(message_.length());
+  message_data_.resize(message_.field_content().value().size());
+}
 
 void Listener::Initialize(std::error_code &err) {
   Initialize([](){}, err);
@@ -47,7 +66,7 @@ uint16_t Listener::port() const {
 
 void Listener::Run() {
   socket_.async_receive_from(
-      asio::buffer(message_.data(), message_.size()), pub_endpoint_,
+      asio::buffer(datagram_), pub_endpoint_,
       [&](const asio::error_code& cerr, std::size_t size) {
     spdlog::trace("wire - New message received");
     if (cerr) {
@@ -55,53 +74,64 @@ void Listener::Run() {
       Run();
       return;
     }
-
-    auto header = message_.header();
-    if (header.flags != Message::kDefaultFlags || \
-        header.extension_id != Message::kDefaultExtensionID) {
+    
+    std::error_code err;
+    Parse(datagram_.data(), datagram_.size(), message_, err);
+    if (err) {
       spdlog::debug("wire - Invalid message received");
       Run();
       return;
     }
-
-    if (header.extension_version != Message::kDefaultExtensionVersion) {
-      spdlog::debug("wire - Invalid extension version");
+    
+    auto& header = message_.field_header();
+    auto& opt_extension = message_.field_header().field_opt_extension();
+    if (!opt_extension.doesExist()) {
+      spdlog::debug("wire - Missing synchronization extension");
+      Run();
+      return;
+    }
+    auto& extension = opt_extension.value().accessField_oac_extension();
+    if (!extension.valid()) {
+      spdlog::debug("wire - Invalid extension");
       Run();
       return;
     }
 
     // Update the message extension ip address if set to 0.0.0.0 to the
     //  publisher address.
-    auto dntp_address = message_.extension_ntp_server_address_ipv4();
-    if (dntp_address == std::array<uint8_t, 4>{0, 0, 0, 0}) {
+    auto& dntp_address = extension.field_dntp_server_ipv4_address().value();
+    if (internal::ToAddr(dntp_address) == std::array<uint8_t, 4>{0, 0, 0, 0}) {
       auto addr = pub_endpoint_.address().to_v4().to_bytes();
-      header.extension_ntp_server_address_ipv4_part0 = addr[0];
-      header.extension_ntp_server_address_ipv4_part1 = addr[1];
-      header.extension_ntp_server_address_ipv4_part2 = addr[2];
-      header.extension_ntp_server_address_ipv4_part3 = addr[3];
-      dntp_address = addr;
+      for (auto idx = 0; idx < addr.size(); idx++) {
+        dntp_address[idx].value() = addr[idx];
+      }
     }
-    asio::ip::udp::endpoint dntp_server_endpoint(
-      asio::ip::address_v4(dntp_address),
-      mem::FromBigEndian(header.extension_ntp_server_port));
+    
+    asio::ip::udp::endpoint dntp_server_endpoint(asio::ip::address_v4(internal::ToAddr(dntp_address)), extension.field_dntp_server_port().value());
 
     // If the reference timestamp changed it means that the stream got reset
     // We can reset the read content
     auto has_same_endpoint = dntp_server_endpoint_ == dntp_server_endpoint;
-    auto has_same_reference_timestamp = reference_timestamp_ == header.extension_reference_timestamp;
+    auto has_same_reference_timestamp = dntp::IsEqual(reference_timestamp_, extension.field_reference_timestamp());
     if (!(has_same_endpoint && has_same_reference_timestamp)) {
       spdlog::debug("wire - Reset stream");
       dntp_server_endpoint_ = dntp_server_endpoint;
-      reference_timestamp_ = header.extension_reference_timestamp;
+      reference_timestamp_ = extension.field_reference_timestamp();
       data_.Clear();
       // execute the on_stream_reset callback asynchronously
       context_.post(on_stream_reset_);
     }
 
     // Push obtained data in the circular buffer
-    data_.set_push_index(reference_timestamp_, mem::FromBigEndian(header.timestamp));
-    data_.Push(message_.content(), message_.content_size());
-
+    const auto& content = message_.field_content().value();
+    auto data_iterator = message_data_.begin();
+    for (const auto& value : content) {
+      *data_iterator = value.value();
+      data_iterator++;
+    }
+    
+    data_.set_push_index(reference_timestamp_, header.field_timestamp().value());
+    data_.Push(message_data_.data(), message_data_.size());
     Run();
   });
 }

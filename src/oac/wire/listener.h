@@ -7,6 +7,7 @@
 #include <asio.hpp>
 
 #include "oac/memory/circular_buffer.h"
+#include "oac/dntp/message.h"
 
 #include "oac/wire/message.h"
 #include "oac/wire/listener/output.h"
@@ -17,8 +18,8 @@ namespace wire {
 
 class Listener {
  public:
-  static constexpr const uint64_t kSamplingRate = 44100;
-
+  constexpr static const std::chrono::seconds kBufferDuration = std::chrono::seconds(10);
+  
   /// Constructor
   /// \param context the asio::io_context on which the listener will run
   explicit Listener(asio::io_context& context);
@@ -59,12 +60,15 @@ class Listener {
   asio::io_context& context_;
   asio::ip::udp::socket socket_;
   std::function<void()> on_stream_reset_;
+  
   Message message_;
+  std::vector<uint8_t> datagram_;
+  std::vector<int16_t> message_data_;
 
   asio::ip::udp::endpoint pub_endpoint_;
 
   asio::ip::udp::endpoint dntp_server_endpoint_;
-  uint64_t reference_timestamp_;
+  dntp::Timestamp reference_timestamp_;
   listener::Buffer data_;
 };
 

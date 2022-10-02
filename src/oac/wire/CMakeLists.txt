@@ -1,6 +1,8 @@
 set(wire_sources
   message.h
   message.cc
+  payload_type.h
+  payload_type.cc
 
   publisher_interface.h
   publisher.h
@@ -16,10 +18,11 @@ add_library(oac_wire ${wire_sources})
 target_link_libraries(oac_wire
   oac::memory
   oac::dntp
+  oac_msg
+  comms
 
   asio
   spdlog
-  astruct
 )
 target_include_directories(oac_wire PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>

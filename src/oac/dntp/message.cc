@@ -25,6 +25,10 @@ void Serialize(const Message& message,
   err = std::make_error_code(std::errc::protocol_error);
 }
 
+bool IsEqual(const Timestamp& ts, const Timestamp& other) {
+  return ts.field_second().value() == other.field_second().value() && \
+    ts.field_fraction().value() == other.field_fraction().value();
+}
 
 TimePoint ToTimePoint(const Timestamp& ts) {
   uint64_t duration_ns = static_cast<double>(ts.field_fraction().value() * 1e9) / std::numeric_limits<uint32_t>::max();

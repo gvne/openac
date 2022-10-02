@@ -3,7 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include "oac/memory/endian.h"
-#include "oac/dntp/timestamp.h"
+#include "oac/dntp/message.h"
 
 namespace oac {
 namespace wire {
@@ -13,8 +13,13 @@ Publisher::Publisher(asio::io_context& context,
   context_(context),
   socket_(context),
   dntp_server_(dntp_server),
-  buffer_(Message::kSampleCount * 100)  // TODO: find a clever way to initialize that buffer
-  {}
+  message_content_(FramePerPacket(kPayloadType)),
+  buffer_(message_content_.size() * 100)  // TODO: find a clever way to initialize that buffer
+  {
+    message_ = MakeEmptyMessage(FramePerPacket(kPayloadType));
+    message_content_.resize(message_.field_content().value().size());
+    datagram_.resize(message_.length());
+  }
 
 void Publisher::Initialize(std::error_code& err) {
   socket_.open(asio::ip::udp::v4(), err);
@@ -31,39 +36,36 @@ void Publisher::AddSubscriber(asio::ip::udp::endpoint sub_addr) {
 void Publisher::Reset() {
   spdlog::trace("wire - Resetting the publisher");
 
-  Message::Header header;
-  header.flags = Message::kDefaultFlags;
-  header.sequence_number = mem::ToBigEndian(uint16_t(0));
-  header.timestamp = mem::ToBigEndian(uint32_t(0));
-  header.ssrc = mem::ToBigEndian(uint32_t(0));
-
-  // Extension. Specific data related to oac. Mostly used for sync
-  header.extension_id = Message::kDefaultExtensionID;
-  header.extension_length = mem::ToBigEndian(Message::kExtensionLength);
-  header.extension_version = Message::kDefaultExtensionVersion;
-  header.extension_ntp_server_port = \
-    mem::ToBigEndian(dntp_server_.endpoint().port());
-  auto ipv4_addr = dntp_server_.endpoint().address().to_v4().to_bytes();
-  header.extension_ntp_server_address_ipv4_part0 = ipv4_addr[0];
-  header.extension_ntp_server_address_ipv4_part1 = ipv4_addr[1];
-  header.extension_ntp_server_address_ipv4_part2 = ipv4_addr[2];
-  header.extension_ntp_server_address_ipv4_part3 = ipv4_addr[3];
-  header.extension_reference_timestamp = dntp::timestamp::Pack(dntp_server_.Now());
-
-  message_.set_header(header);
+  auto& header = message_.field_header();
+  auto& extension = message_.field_header().field_opt_extension().value().accessField_oac_extension();
+  
+  header.field_sequence_number().value() = 0;
+  header.field_timestamp().value() = 0;
+  extension.field_dntp_server_port().value() = dntp_server_.endpoint().port();
+  auto& addr = extension.field_dntp_server_ipv4_address().value();
+  auto dntp_addr = dntp_server_.endpoint().address().to_v4().to_bytes();
+  for (auto idx = 0; idx < dntp_addr.size(); idx++) {
+    addr[idx].value() = dntp_addr[idx];
+  }
+  extension.field_reference_timestamp().value() = dntp::Now().value();
 }
 
 void Publisher::Publish(const int16_t* data, std::size_t sample_count) {
   buffer_.Push(data, sample_count);
-//  context_.post([this](){
   Publish();
-//  });
 }
 
 void Publisher::Publish() {
-  while (buffer_.size() > Message::kSampleCount) {
-    spdlog::trace("Publishing {}", buffer_.size());
-    buffer_.Pop(message_.content(), message_.content_size());
+  while (buffer_.size() >= message_content_.size()) {
+    spdlog::trace("wire - Publishing {}", buffer_.size());
+    buffer_.Pop(message_content_.data(), message_content_.size());
+    
+    auto& content = message_.field_content().value();
+    auto content_iterator = message_content_.begin();
+    for (auto& value : content) {
+      value.value() = *content_iterator;
+      content_iterator++;
+    }
     PublishMessage();
   }
 }
@@ -71,10 +73,15 @@ void Publisher::Publish() {
 void Publisher::PublishMessage() {
   spdlog::trace("wire - Publishing a new message");
   std::error_code err;
+  Serialize(message_, datagram_.data(), datagram_.size(), err);
+  if (err) {
+    spdlog::error("wire - Could not serialize the datagram to send");
+    return;
+  }
 
   for (const auto& endpoint : receivers_addr_) {
     spdlog::trace("wire - Sending to {}:{}", endpoint.address().to_string(), endpoint.port());
-    socket_.send_to(asio::buffer(message_.data(), message_.size()), endpoint, 0, err);
+    socket_.send_to(asio::buffer(datagram_), endpoint, 0, err);
     if (err) {
       spdlog::error("wire - Could not publish: {}", err.message());
       err.clear();
@@ -82,17 +89,8 @@ void Publisher::PublishMessage() {
   }
 
   // update message metadata
-  auto header = message_.header();
-  
-  uint16_t sequence_number = mem::FromBigEndian(header.sequence_number);
-  sequence_number += 1;
-  header.sequence_number = mem::ToBigEndian(sequence_number);
-  
-  uint32_t timestamp = mem::FromBigEndian(header.timestamp);
-  timestamp += message_.content_size();
-  header.timestamp = mem::ToBigEndian(timestamp);
-  
-  message_.set_header(header);
+  message_.field_header().field_sequence_number().value() += 1;
+  message_.field_header().field_timestamp().value() += message_.field_content().value().size();
 }
 
 }  // namespace wire

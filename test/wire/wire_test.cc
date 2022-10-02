@@ -16,7 +16,7 @@ std::vector<int16_t> MakeTestSignal(int16_t min, int16_t max, int16_t step) {
 }
 
 TEST(Wire, Basic) {
-  spdlog::set_level(spdlog::level::trace);
+  spdlog::set_level(spdlog::level::debug);
   std::error_code err;
   asio::io_context context;
   
@@ -58,7 +58,7 @@ TEST(Wire, Basic) {
   context.run_for(std::chrono::seconds(1));
   std::vector<int16_t> output(sent.size());
   listener.output().Pop(output.data(), output.size());
-  
+
   // We should have around 4410 samples latency
   // Make sure we have less than 2ms error = ~100 samples
   for (auto sample_idx = 5000; sample_idx < output.size() - 5000; sample_idx++) {
@@ -67,6 +67,6 @@ TEST(Wire, Basic) {
 }
 
 TEST(Wire, MessageSize) {
-  oac::wire::Message message;
-  ASSERT_EQ(message.size(), 1796); // 882 * sizeof(int16_t) + 32);
+  auto message = oac::wire::MakeEmptyMessage(oac::wire::FramePerPacket(oac::wire::Publisher::kPayloadType));
+  ASSERT_EQ(message.length(), 1796); // 882 * sizeof(int16_t) + 32);
 }

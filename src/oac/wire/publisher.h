@@ -10,12 +10,15 @@
 
 #include "oac/wire/publisher_interface.h"
 #include "oac/wire/message.h"
+#include "oac/wire/payload_type.h"
 
 namespace oac {
 namespace wire {
 
 class Publisher : public PublisherInterface {
  public:
+  static const PayloadType kPayloadType = PayloadType::L16_mono;
+  
   /// Constructor
   /// \param context the asio::io_context on which the publisher will run
   /// \param dntp_server the dntp server used as time reference by the publisher
@@ -46,11 +49,12 @@ class Publisher : public PublisherInterface {
   asio::io_context& context_;
   asio::ip::udp::socket socket_;
   const dntp::ServerInterface& dntp_server_;
+  
   Message message_;
+  std::vector<int16_t> message_content_;
+  std::vector<uint8_t> datagram_;
 
   mem::CircularBuffer<int16_t> buffer_;
-//  std::array<int16_t, Message::kSampleCount> pending_samples_;
-//  std::size_t pending_sample_count_;
   std::list<asio::ip::udp::endpoint> receivers_addr_;
 
 };

@@ -1,4 +1,5 @@
 #include "oac/wire/payload_type.h"
+#include <stdexcept>
 
 namespace oac {
 namespace wire {

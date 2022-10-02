@@ -23,6 +23,8 @@ std::array<uint8_t, 4> ToAddr(const T& addr) {
 }
 }  // namespace internal
 
+const std::chrono::seconds Listener::kBufferDuration(10);
+
 Listener::Listener(asio::io_context& context) :
   context_(context),
   socket_(context),

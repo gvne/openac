@@ -17,7 +17,7 @@ namespace wire {
 
 class Publisher : public PublisherInterface {
  public:
-  static const PayloadType kPayloadType = PayloadType::L16_mono;
+  static const PayloadType kPayloadType;;
   
   /// Constructor
   /// \param context the asio::io_context on which the publisher will run

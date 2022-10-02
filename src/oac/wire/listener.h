@@ -18,7 +18,7 @@ namespace wire {
 
 class Listener {
  public:
-  constexpr static const std::chrono::seconds kBufferDuration = std::chrono::seconds(10);
+  static const std::chrono::seconds kBufferDuration;
   
   /// Constructor
   /// \param context the asio::io_context on which the listener will run

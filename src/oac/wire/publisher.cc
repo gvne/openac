@@ -7,6 +7,8 @@
 namespace oac {
 namespace wire {
 
+const PayloadType Publisher::kPayloadType = PayloadType::L16_mono;
+
 Publisher::Publisher(asio::io_context& context,
                      const dntp::ServerInterface& dntp_server) :
   context_(context),

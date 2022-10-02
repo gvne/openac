@@ -8,8 +8,10 @@
 
 namespace oac {
 namespace wire {
+
 namespace internal {
-std::array<uint8_t, 4> ToAddr(const auto& addr) {
+template <typename T>
+std::array<uint8_t, 4> ToAddr(const T& addr) {
   if (addr.size() != 4) {
     return {};
   }

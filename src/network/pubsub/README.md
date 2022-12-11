@@ -33,7 +33,7 @@ To differentiate messages, the first octet is a message type identifier:
 ### DATA
 
 * uint8  - message type: 0 (DATA)
-* uint8  - TODO: use it to ask the subscriber to send a Keep-alive ?
+* uint8  - TODO: use it to ask the subscriber to send a Keep-alive + re-transmit flag 
 * uint16 - sequence number: The index used to detect missing datagrams and ask
 for re-transmission. The sequence number is incremented by 1 for each datagram.
 * Frame content

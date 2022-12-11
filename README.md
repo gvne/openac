@@ -1,3 +1,5 @@
+# ARCHIVED: This project was a great first step in the local cast world but won't be maintained any longer. New projects on related subjects will come soon
+
 # OpenAC : Open source implementation of Audio Cast
 
 ## DNTP : dumb Network time protocol ([NTP](https://en.wikipedia.org/wiki/Network_Time_Protocol)) implementation
